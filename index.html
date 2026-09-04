@@ -721,5 +721,410 @@ footer strong{
 
 
 <!-- ===== SHOP ===== -->
+<section class="shop" id="shop">
 
-<section class="shop" id="
+  <div class="section-title">
+    <small>ONLINE SHOP</small>
+    <h2>線上商店</h2>
+  </div>
+
+  <div class="product">
+
+    <div class="product-gallery">
+
+      <img
+        id="mainProductImage"
+        class="main-product-image"
+        src="3ae35b9791735fd7743e5144e82246ec.jpg"
+        alt="WUGONG 四皇・繫世 黃銅款"
+      >
+
+      <div class="thumbnails">
+
+        <img
+          class="thumbnail active"
+          src="3ae35b9791735fd7743e5144e82246ec.jpg"
+          onclick="changeImage(this)"
+          alt="四皇・繫世 黃銅款"
+        >
+
+        <img
+          class="thumbnail"
+          src="19fe1fa0d356fee9f66fffb34a8b6678.jpg"
+          onclick="changeImage(this)"
+          alt="四皇・繫世 黃銅款"
+        >
+
+      </div>
+    </div>
+
+    <div class="product-info">
+
+      <div class="product-label">
+        WUGONG · FOUNTAIN PEN
+      </div>
+
+      <h3>四皇・繫世（黃銅款）</h3>
+
+      <div class="price" id="productPrice">
+        NT$13,500
+      </div>
+
+      <div class="product-description">
+        WUGONG 手工鋼筆作品。以深色筆身搭配黃銅細節，
+        呈現沉穩而具有手工質感的書寫器物。
+        可依個人書寫習慣選擇不同筆尖配置。
+      </div>
+
+      <span class="option-title">筆尖選配</span>
+
+      <div class="nib-options">
+
+        <label class="nib-option selected">
+          <span>
+            <input
+              type="radio"
+              name="nib"
+              value="單尖"
+              data-price="13500"
+              checked
+              onchange="selectNib(this)"
+            >
+            單尖
+          </span>
+
+          <span class="nib-price">NT$13,500</span>
+        </label>
+
+        <label class="nib-option">
+          <span>
+            <input
+              type="radio"
+              name="nib"
+              value="雙層特殊尖"
+              data-price="18000"
+              onchange="selectNib(this)"
+            >
+            雙層特殊尖
+          </span>
+
+          <span class="nib-price">NT$18,000</span>
+        </label>
+
+        <label class="nib-option">
+          <span>
+            <input
+              type="radio"
+              name="nib"
+              value="逆雙層特殊尖"
+              data-price="18000"
+              onchange="selectNib(this)"
+            >
+            逆雙層特殊尖
+          </span>
+
+          <span class="nib-price">NT$18,000</span>
+        </label>
+
+      </div>
+
+      <div class="quantity-row">
+        <label for="quantity">數量</label>
+
+        <input
+          id="quantity"
+          type="number"
+          min="1"
+          value="1"
+        >
+      </div>
+
+      <button
+        class="add-cart"
+        onclick="addToCart()"
+      >
+        加入購物車
+      </button>
+
+    </div>
+  </div>
+
+</section>
+
+
+<section class="craft" id="craft">
+
+  <div class="section-title">
+    <small>CRAFTSMANSHIP</small>
+    <h2>材質 × 技藝 × 時間</h2>
+  </div>
+
+  <p>
+    真正的工藝不只是外觀，而是對每一道工序的堅持。
+    從設計草圖開始，經過加工、研磨、組裝與細節修整，
+    WUGONG 希望讓每一件作品，都能在時間中持續留下質感。
+  </p>
+
+</section>
+
+
+<footer>
+
+  <p><strong>WUGONG</strong></p>
+
+  <p>
+    Handcrafted Writing Instruments · Taiwan
+  </p>
+
+  <p style="margin-top:12px;">
+    © 2026 WUGONG. All Rights Reserved.
+  </p>
+
+</footer>
+
+
+<div
+  class="cart-overlay"
+  id="cartOverlay"
+  onclick="closeCart()"
+></div>
+
+
+<div
+  class="cart-drawer"
+  id="cartDrawer"
+>
+
+  <div class="cart-header">
+    <h2>購物車</h2>
+
+    <button
+      class="close-cart"
+      onclick="closeCart()"
+    >
+      ×
+    </button>
+  </div>
+
+  <div id="cartItems"></div>
+
+  <div
+    class="cart-total"
+    id="cartTotalBox"
+    style="display:none;"
+  >
+    <span>合計</span>
+    <strong id="cartTotal">NT$0</strong>
+  </div>
+
+  <button
+    class="checkout-btn"
+    id="checkoutButton"
+    style="display:none;"
+    onclick="checkoutNotice()"
+  >
+    前往結帳
+  </button>
+
+</div>
+
+
+<script>
+
+function changeImage(image) {
+
+  document.getElementById("mainProductImage").src = image.src;
+
+  document.querySelectorAll(".thumbnail").forEach(function(item) {
+    item.classList.remove("active");
+  });
+
+  image.classList.add("active");
+}
+
+
+function selectNib(input) {
+
+  document.querySelectorAll(".nib-option").forEach(function(item) {
+    item.classList.remove("selected");
+  });
+
+  input.closest(".nib-option").classList.add("selected");
+
+  const price = Number(input.dataset.price);
+
+  document.getElementById("productPrice").textContent =
+    "NT$" + price.toLocaleString("zh-TW");
+}
+
+
+let cart =
+  JSON.parse(localStorage.getItem("wugongCart")) || [];
+
+
+function addToCart() {
+
+  const selectedNib =
+    document.querySelector('input[name="nib"]:checked');
+
+  let quantity =
+    parseInt(document.getElementById("quantity").value);
+
+  if (!quantity || quantity < 1) {
+    quantity = 1;
+  }
+
+  const item = {
+    id: "four-emperors-brass-" + selectedNib.value,
+    name: "WUGONG 四皇・繫世（黃銅款）",
+    option: selectedNib.value,
+    price: Number(selectedNib.dataset.price),
+    quantity: quantity
+  };
+
+  const existing =
+    cart.find(function(cartItem) {
+      return cartItem.id === item.id;
+    });
+
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
+    cart.push(item);
+  }
+
+  saveCart();
+  openCart();
+}
+
+
+function saveCart() {
+
+  localStorage.setItem(
+    "wugongCart",
+    JSON.stringify(cart)
+  );
+
+  renderCart();
+}
+
+
+function renderCart() {
+
+  const container =
+    document.getElementById("cartItems");
+
+  const totalBox =
+    document.getElementById("cartTotalBox");
+
+  const checkoutButton =
+    document.getElementById("checkoutButton");
+
+  let count = 0;
+  let total = 0;
+
+  cart.forEach(function(item) {
+    count += item.quantity;
+    total += item.price * item.quantity;
+  });
+
+  document.getElementById("cartCount").textContent = count;
+
+  if (cart.length === 0) {
+
+    container.innerHTML =
+      '<div class="cart-empty">購物車目前沒有商品</div>';
+
+    totalBox.style.display = "none";
+    checkoutButton.style.display = "none";
+
+    return;
+  }
+
+  container.innerHTML =
+    cart.map(function(item, index) {
+
+      return `
+        <div class="cart-item">
+
+          <div class="cart-item-name">
+            ${item.name}
+          </div>
+
+          <div class="cart-item-option">
+            筆尖：${item.option}
+          </div>
+
+          <div class="cart-item-bottom">
+
+            <div>
+              NT$${item.price.toLocaleString("zh-TW")}
+              × ${item.quantity}
+            </div>
+
+            <button
+              class="remove-item"
+              onclick="removeCartItem(${index})"
+            >
+              移除
+            </button>
+
+          </div>
+        </div>
+      `;
+
+    }).join("");
+
+  document.getElementById("cartTotal").textContent =
+    "NT$" + total.toLocaleString("zh-TW");
+
+  totalBox.style.display = "flex";
+  checkoutButton.style.display = "block";
+}
+
+
+function removeCartItem(index) {
+  cart.splice(index, 1);
+  saveCart();
+}
+
+
+function openCart() {
+
+  document
+    .getElementById("cartDrawer")
+    .classList.add("open");
+
+  document
+    .getElementById("cartOverlay")
+    .classList.add("show");
+}
+
+
+function closeCart() {
+
+  document
+    .getElementById("cartDrawer")
+    .classList.remove("open");
+
+  document
+    .getElementById("cartOverlay")
+    .classList.remove("show");
+}
+
+
+function checkoutNotice() {
+
+  alert(
+    "購物車功能已完成。下一階段會加入正式結帳與付款系統。"
+  );
+}
+
+
+renderCart();
+
+</script>
+
+</body>
+</html>
+
