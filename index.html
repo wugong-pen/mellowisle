@@ -3,15 +3,354 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mellow Isle</title>
+  <title>WUGONG | Handcrafted Writing Instruments</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Noto Sans TC", Arial, sans-serif;
+      background: #111;
+      color: #f5f1e8;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 6%;
+      background: rgba(15, 15, 15, 0.88);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .brand-name {
+      font-family: Georgia, serif;
+      letter-spacing: 3px;
+      font-size: 22px;
+      color: #d7b36a;
+    }
+
+    nav {
+      display: flex;
+      gap: 28px;
+      font-size: 15px;
+    }
+
+    nav a {
+      color: #eee;
+      transition: 0.3s;
+    }
+
+    nav a:hover {
+      color: #d7b36a;
+    }
+
+    .hero {
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.62)),
+        url("28731.jpg") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      padding: 120px 8% 70px;
+    }
+
+    .hero-content {
+      max-width: 680px;
+    }
+
+    .hero-kicker {
+      color: #d7b36a;
+      letter-spacing: 4px;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      font-family: Georgia, serif;
+      font-size: clamp(52px, 8vw, 96px);
+      letter-spacing: 8px;
+      margin-bottom: 14px;
+    }
+
+    .hero h2 {
+      font-family: Georgia, serif;
+      font-weight: normal;
+      font-size: clamp(22px, 3vw, 36px);
+      margin-bottom: 24px;
+      color: #f0e7d6;
+    }
+
+    .hero p {
+      max-width: 560px;
+      font-size: 18px;
+      color: #ddd2bf;
+      margin-bottom: 34px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 13px 30px;
+      border: 1px solid #d7b36a;
+      color: #d7b36a;
+      letter-spacing: 2px;
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      background: #d7b36a;
+      color: #111;
+    }
+
+    section {
+      padding: 90px 8%;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+
+    .section-title small {
+      display: block;
+      color: #d7b36a;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .section-title h2 {
+      font-family: Georgia, serif;
+      font-size: 38px;
+      font-weight: normal;
+    }
+
+    .intro {
+      background: #171717;
+    }
+
+    .intro-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+      color: #cfc7b9;
+      font-size: 18px;
+    }
+
+    .collections {
+      background: #0f0f0f;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .card {
+      min-height: 330px;
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      border-color: #d7b36a;
+    }
+
+    .card span {
+      color: #d7b36a;
+      letter-spacing: 3px;
+      font-size: 13px;
+    }
+
+    .card h3 {
+      font-family: Georgia, serif;
+      font-size: 30px;
+      margin: 10px 0;
+    }
+
+    .card p {
+      color: #aaa;
+    }
+
+    .craft {
+      background: #181512;
+      text-align: center;
+    }
+
+    .craft p {
+      max-width: 850px;
+      margin: 0 auto;
+      color: #cfc5b7;
+      font-size: 18px;
+    }
+
+    footer {
+      background: #090909;
+      padding: 42px 8%;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      color: #999;
+    }
+
+    footer strong {
+      color: #d7b36a;
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 850px) {
+      header {
+        padding: 14px 5%;
+      }
+
+      nav {
+        display: none;
+      }
+
+      .brand img {
+        width: 46px;
+        height: 46px;
+      }
+
+      .hero {
+        padding-left: 7%;
+        padding-right: 7%;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 70px 7%;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <h1>Mellow Isle</h1>
-  <h2>歡迎來到 Mellow Isle</h2>
+  <header>
+    <div class="brand">
+      <img src="964161_0.jpg" alt="WUGONG Logo">
+      <div class="brand-name">WUGONG</div>
+    </div>
 
-  <p>網站建置中，敬請期待。</p>
+    <nav>
+      <a href="#home">首頁</a>
+      <a href="#collections">作品系列</a>
+      <a href="#craft">工藝</a>
+      <a href="#about">品牌故事</a>
+      <a href="#">聯絡我們</a>
+      <a href="#">購物車</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-content">
+      <div class="hero-kicker">HANDCRAFTED IN TAIWAN</div>
+      <h1>WUGONG</h1>
+      <h2>Handcrafted Writing Instruments</h2>
+      <p>
+        以材質、工藝與時間，打造具有溫度的書寫器物。
+        每一支筆，都保留手作的痕跡，也承載屬於使用者自己的故事。
+      </p>
+      <a href="#collections" class="btn">探索作品</a>
+    </div>
+  </section>
+
+  <section class="intro" id="about">
+    <div class="section-title">
+      <small>OUR STORY</small>
+      <h2>以工藝，重新定義書寫</h2>
+    </div>
+
+    <div class="intro-wrap">
+      WUGONG 專注於手工鋼筆與書寫器物的設計製作，
+      從材質選擇、金屬加工、木作、銀雕到漆藝，
+      透過不同工藝的交會，讓每件作品成為能被長久使用與收藏的器物。
+    </div>
+  </section>
+
+  <section class="collections" id="collections">
+    <div class="section-title">
+      <small>COLLECTIONS</small>
+      <h2>作品系列</h2>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <span>FOUNTAIN PEN</span>
+        <h3>手工鋼筆</h3>
+        <p>以材質與細節為核心，打造具有個性的書寫工具。</p>
+      </div>
+
+      <div class="card">
+        <span>INK</span>
+        <h3>手工墨水</h3>
+        <p>從色彩、流動性到書寫表現，發展屬於 WUGONG 的墨水系列。</p>
+      </div>
+
+      <div class="card">
+        <span>ART PIECES</span>
+        <h3>工藝收藏</h3>
+        <p>結合漆藝、銀雕、琺瑯與特殊材質的收藏級作品。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="craft" id="craft">
+    <div class="section-title">
+      <small>CRAFTSMANSHIP</small>
+      <h2>材質 × 技藝 × 時間</h2>
+    </div>
+
+    <p>
+      真正的工藝不只是外觀，而是對每一道工序的堅持。
+      從設計草圖開始，經過加工、研磨、組裝與細節修整，
+      WUGONG 希望讓每一件作品，都能在時間中持續留下質感。
+    </p>
+  </section>
+
+  <footer>
+    <p><strong>WUGONG</strong></p>
+    <p>Handcrafted Writing Instruments · Taiwan</p>
+    <p style="margin-top:12px;">© 2026 WUGONG. All Rights Reserved.</p>
+  </footer>
 
 </body>
 </html>
