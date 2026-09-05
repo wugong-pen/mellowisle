@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>四皇・繫世（黃銅款）｜WUGONG</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    background:#151515;
+    color:#f5f1e8;
+    font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+}
+
+/* HEADER */
+
+header{
+    height:90px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1200px;
+    margin:auto;
+    padding:0 30px;
+}
+
+.logo{
+    color:#c9aa6e;
+    font-size:25px;
+    letter-spacing:5px;
+    text-decoration:none;
+}
+
+nav a{
+    color:#ddd;
+    text-decoration:none;
+    margin-left:30px;
+    font-size:14px;
+}
+
+nav a:hover{
+    color:#c9aa6e;
+}
+
+/* BREADCRUMB */
+
+.breadcrumb{
+    max-width:1200px;
+    margin:20px auto 35px;
+    padding:0 30px;
+    color:#999;
+    font-size:13px;
+}
+
+.breadcrumb a{
+    color:#c9aa6e;
+    text-decoration:none;
+}
+
+/* PRODUCT */
+
+.product{
+    max-width:1200px;
+    margin:auto;
+    padding:0 30px 80px;
+    display:grid;
+    grid-template-columns:1.15fr .85fr;
+    gap:60px;
+    align-items:start;
+}
+
+/* IMAGE */
+
+.main-product-image{
+    width:100%;
+    display:block;
+}
+
+.thumbnails{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-top:10px;
+}
+
+.thumbnail{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    cursor:pointer;
+    opacity:.65;
+    border:1px solid transparent;
+}
+
+.thumbnail:hover,
+.thumbnail.active{
+    opacity:1;
+    border-color:#c9aa6e;
+}
+
+/* PRODUCT INFO */
+
+.product-info small{
+    color:#c9aa6e;
+    letter-spacing:3px;
+}
+
+.product-info h1{
+    font-size:32px;
+    margin:15px 0;
+    font-weight:500;
+}
+
+.price{
+    font-family:Georgia,serif;
+    font-size:30px;
+    color:#d8bd82;
+    margin:25px 0;
+}
+
+.divider{
+    height:1px;
+    background:#333;
+    margin:30px 0;
+}
+
+.description{
+    color:#c8c8c8;
+    line-height:2;
+    font-size:15px;
+}
+
+/* NIB */
+
+.option-title{
+    margin-bottom:12px;
+    font-size:15px;
+}
+
+.nib-option{
+    border:1px solid #555;
+    padding:16px;
+    margin-bottom:10px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    transition:.2s;
+}
+
+.nib-option:hover{
+    border-color:#c9aa6e;
+}
+
+.nib-option.active{
+    border-color:#c9aa6e;
+    background:#1c1a16;
+}
+
+/* QUANTITY */
+
+.quantity-area{
+    margin-top:25px;
+}
+
+.quantity{
+    display:flex;
+    width:135px;
+    height:45px;
+    border:1px solid #555;
+    margin-top:10px;
+}
+
+.quantity button{
+    width:40px;
+    border:0;
+    background:#222;
+    color:#fff;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.quantity input{
+    width:55px;
+    text-align:center;
+    background:#151515;
+    color:white;
+    border:0;
+    font-size:16px;
+}
+
+/* CART */
+
+.add-cart{
+    width:100%;
+    margin-top:25px;
+    padding:17px;
+    background:#c9aa6e;
+    color:#111;
+    border:0;
+    font-size:16px;
+    letter-spacing:2px;
+    cursor:pointer;
+}
+
+.add-cart:hover{
+    background:#e5c781;
+}
+
+/* DETAILS */
+
+.details{
+    margin-top:40px;
+    border-top:1px solid #333;
+    padding-top:25px;
+    color:#aaa;
+    line-height:2;
+    font-size:14px;
+}
+
+.back{
+    display:inline-block;
+    margin-top:25px;
+    color:#c9aa6e;
+    text-decoration:none;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+    header{
+        height:70px;
+        padding:0 20px;
+    }
+
+    nav{
+        display:none;
+    }
+
+    .product{
+        grid-template-columns:1fr;
+        gap:30px;
+        padding:0 20px 50px;
+    }
+
+    .product-info h1{
+        font-size:26px;
+    }
+
+    .breadcrumb{
+        padding:0 20px;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<a href="index.html" class="logo">WUGONG</a>
+
+<nav>
+    <a href="index.html">首頁</a>
+    <a href="index.html#collections">作品系列</a>
+    <a href="index.html#shop">線上商店</a>
+    <a href="index.html#craft">工藝</a>
+</nav>
+
+</header>
+
+
+<div class="breadcrumb">
+    <a href="index.html#shop">線上商店</a>
+    &nbsp; / &nbsp;
+    四皇・繫世（黃銅款）
+</div>
+
+
+<main class="product">
+
+<!-- 左側商品圖片 -->
+
+<div class="product-gallery">
+
+<img
+    id="mainProductImage"
+    class="main-product-image"
+    src="3ae35b9791735fd7743e5144e82246ec.jpg"
+    alt="四皇・繫世 黃銅款"
+>
+
+<div class="thumbnails">
+
+<img
+    class="thumbnail active"
+    src="3ae35b9791735fd7743e5144e82246ec.jpg"
+    onclick="changeImage(this)"
+    alt="四皇・繫世"
+>
+
+<img
+    class="thumbnail"
+    src="28731.jpg"
+    onclick="changeImage(this)"
+    alt="四皇・繫世"
+>
+
+<img
+    class="thumbnail"
+    src="964161_0.jpg"
+    onclick="changeImage(this)"
+    alt="四皇・繫世"
+>
+
+</div>
+
+</div>
+
+
+<!-- 右側商品資訊 -->
+
+<div class="product-info">
+
+<small>WUGONG · FOUNTAIN PEN</small>
+
+<h1>四皇・繫世（黃銅款）</h1>
+
+<div class="price" id="productPrice">
+NT$13,500
+</div>
+
+<div class="divider"></div>
+
+<p class="description">
+WUGONG 手工鋼筆作品。以深色筆身搭配黃銅細節，
+呈現沉穩而具有手工質感的書寫器物。
+可依個人書寫習慣選擇不同筆尖配置。
+</p>
+
+<div class="divider"></div>
+
+<div class="option-title">筆尖選配</div>
+
+<div
+    class="nib-option active"
+    data-price="13500"
+    onclick="selectNib(this)"
+>
+<span>● 單尖</span>
+<span>NT$13,500</span>
+</div>
+
+<div
+    class="nib-option"
+    data-price="18000"
+    onclick="selectNib(this)"
+>
+<span>● 雙層特殊尖</span>
+<span>NT$18,000</span>
+</div>
+
+<div
+    class="nib-option"
+    data-price="18000"
+    onclick="selectNib(this)"
+>
+<span>● 逆雙層特殊尖</span>
+<span>NT$18,000</span>
+</div>
+
+
+<div class="quantity-area">
+
+<div class="option-title">數量</div>
+
+<div class="quantity">
+
+<button onclick="changeQty(-1)">−</button>
+
+<input
+    id="quantity"
+    type="number"
+    value="1"
+    min="1"
+    readonly
+>
+
+<button onclick="changeQty(1)">＋</button>
+
+</div>
+
+</div>
+
+
+<button class="add-cart" onclick="addToCart()">
+加入購物車
+</button>
+
+
+<div class="details">
+
+<strong>作品資訊</strong><br><br>
+
+品牌｜WUGONG<br>
+品名｜四皇・繫世<br>
+款式｜黃銅款<br>
+類型｜手工鋼筆<br>
+製作｜Taiwan
+
+</div>
+
+
+<a class="back" href="index.html#shop">
+← 返回線上商店
+</a>
+
+</div>
+
+</main>
+
+
+<script>
+
+/* 切換商品圖片 */
+
+function changeImage(img){
+
+    document.getElementById("mainProductImage").src = img.src;
+
+    document
+        .querySelectorAll(".thumbnail")
+        .forEach(item => item.classList.remove("active"));
+
+    img.classList.add("active");
+}
+
+
+/* 選擇筆尖 */
+
+function selectNib(option){
+
+    document
+        .querySelectorAll(".nib-option")
+        .forEach(item => item.classList.remove("active"));
+
+    option.classList.add("active");
+
+    const price = Number(option.dataset.price);
+
+    document.getElementById("productPrice").textContent =
+        "NT$" + price.toLocaleString();
+}
+
+
+/* 數量 */
+
+function changeQty(amount){
+
+    const input = document.getElementById("quantity");
+
+    let qty = Number(input.value) + amount;
+
+    if(qty < 1){
+        qty = 1;
+    }
+
+    input.value = qty;
+}
+
+
+/* 加入購物車 */
+
+function addToCart(){
+
+    const selectedNib =
+        document.querySelector(".nib-option.active");
+
+    const nibName =
+        selectedNib.children[0].textContent.replace("●","").trim();
+
+    const price =
+        Number(selectedNib.dataset.price);
+
+    const quantity =
+        Number(document.getElementById("quantity").value);
+
+    const cartItem = {
+        id:"sihuang-brass-" + nibName,
+        product:"四皇・繫世（黃銅款）",
+        nib:nibName,
+        price:price,
+        quantity:quantity,
+        image:"3ae35b9791735fd7743e5144e82246ec.jpg"
+    };
+
+    let cart =
+        JSON.parse(localStorage.getItem("wugongCart")) || [];
+
+    const existing =
+        cart.find(item => item.id === cartItem.id);
+
+    if(existing){
+        existing.quantity += quantity;
+    }else{
+        cart.push(cartItem);
+    }
+
+    localStorage.setItem(
+        "wugongCart",
+        JSON.stringify(cart)
+    );
+
+    alert("已加入購物車");
+}
+
+</script>
+
+</body>
+</html>
