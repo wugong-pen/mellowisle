@@ -403,6 +403,59 @@ section{
 .add-cart:hover{
   background:#e5c781;
 }
+/* ===== SHOP CATEGORIES ===== */
+
+.shop-categories{
+    max-width:1200px;
+    margin:0 auto 50px;
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:30px;
+}
+
+.brand-group{
+    border:1px solid #333;
+    padding:30px;
+    background:#1b1b1b;
+}
+
+.brand-group h3{
+    color:#fff;
+    font-size:22px;
+    margin:0 0 22px;
+    letter-spacing:1px;
+}
+
+.brand-group button{
+    display:block;
+    width:100%;
+    background:transparent;
+    color:#ccc;
+    border:0;
+    border-bottom:1px solid #333;
+    padding:14px 5px;
+    text-align:left;
+    font-size:16px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.brand-group button:hover{
+    color:#c9aa6e;
+    padding-left:12px;
+}
+
+@media(max-width:700px){
+    .shop-categories{
+        grid-template-columns:1fr;
+        gap:20px;
+    }
+
+    .brand-group{
+        padding:22px;
+    }
+}  
+  
   /* ===== PRODUCT CARDS ===== */
 
 .product-list{
@@ -782,6 +835,23 @@ footer strong{
     <small>ONLINE SHOP</small>
     <h2>線上商店</h2>
   </div>
+  <div class="shop-categories">
+
+  <div class="brand-group">
+    <h3>吾鋼 WUGONG</h3>
+    <button>傳統工藝</button>
+    <button>特殊筆款</button>
+    <button>世界奇木系列</button>
+    <button>手工墨水</button>
+  </div>
+
+  <div class="brand-group">
+    <h3>藏娥 Chang'e</h3>
+    <button>原木鋼筆</button>
+    <button>筆記本</button>
+  </div>
+
+</div>
 <!-- 商品列表 -->
 <div class="product-list">
 
