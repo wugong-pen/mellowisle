@@ -403,6 +403,60 @@ section{
 .add-cart:hover{
   background:#e5c781;
 }
+  /* ===== PRODUCT CARDS ===== */
+
+.product-list{
+    max-width:1200px;
+    margin:0 auto 70px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:30px;
+}
+
+.product-card{
+    background:#1b1b1b;
+    border:1px solid #333;
+    cursor:pointer;
+    transition:transform .3s ease, border-color .3s ease;
+}
+
+.product-card:hover{
+    transform:translateY(-5px);
+    border-color:#c9aa6e;
+}
+
+.product-card img{
+    width:100%;
+    aspect-ratio:1 / 1;
+    object-fit:cover;
+    display:block;
+}
+
+.product-card-info{
+    padding:22px;
+}
+
+.product-card-info small{
+    color:#c9aa6e;
+    letter-spacing:3px;
+}
+
+.product-card-info h3{
+    color:#f5f1e8;
+    font-size:22px;
+    margin:10px 0;
+}
+
+.product-card-info .price{
+    color:#f5f1e8;
+    font-size:20px;
+}
+
+@media(max-width:768px){
+    .product-list{
+        grid-template-columns:1fr;
+    }
+}
 
 /* ===== CRAFT ===== */
 
@@ -728,9 +782,21 @@ footer strong{
     <small>ONLINE SHOP</small>
     <h2>線上商店</h2>
   </div>
+<!-- 商品列表 -->
+<div class="product-list">
 
-  <div class="product">
+  <div class="product-card" onclick="document.getElementById('product-detail').scrollIntoView({behavior:'smooth'})">
+    <img src="3ae35b9791735fd7743e5144e82246ec.jpg" alt="四皇・繫世 黃銅款">
 
+    <div class="product-card-info">
+      <small>WUGONG · FOUNTAIN PEN</small>
+      <h3>四皇・繫世（黃銅款）</h3>
+      <div class="price">NT$13,500</div>
+    </div>
+  </div>
+
+</div>
+  <div class="product" id="product-detail">
     <div class="product-gallery">
 
       <img
