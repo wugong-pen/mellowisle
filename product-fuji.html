@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>靈峰之心・富士山｜WUGONG 吾鋼</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: #111;
+      color: #eee;
+    }
+
+    header {
+      padding: 22px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2c2c2c;
+      background: #111;
+    }
+
+    .logo {
+      font-size: 20px;
+      letter-spacing: 3px;
+      color: #d8c49a;
+    }
+
+    .back-link {
+      color: #ddd;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .back-link:hover {
+      color: #d8c49a;
+    }
+
+    .product {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 70px 6%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 70px;
+      align-items: start;
+    }
+
+    .product-image {
+      width: 100%;
+      background: #1a1a1a;
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #262626;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .product-info small {
+      color: #b8a77e;
+      letter-spacing: 3px;
+    }
+
+    .product-info h1 {
+      font-size: 34px;
+      font-weight: 500;
+      margin: 18px 0;
+    }
+
+    .price {
+      font-size: 24px;
+      color: #d8c49a;
+      margin-bottom: 30px;
+    }
+
+    .description {
+      line-height: 1.9;
+      color: #ccc;
+      margin-bottom: 35px;
+    }
+
+    .option-title {
+      margin-bottom: 10px;
+      color: #ddd;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px;
+      background: #171717;
+      color: #fff;
+      border: 1px solid #444;
+      margin-bottom: 25px;
+    }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .quantity button {
+      width: 38px;
+      height: 38px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+
+    .quantity span {
+      min-width: 25px;
+      text-align: center;
+    }
+
+    .cart-button {
+      width: 100%;
+      padding: 16px;
+      background: #c2a56e;
+      color: #111;
+      border: none;
+      font-size: 16px;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    .cart-button:hover {
+      background: #d5bd8c;
+    }
+
+    @media (max-width: 800px) {
+      .product {
+        grid-template-columns: 1fr;
+        gap: 35px;
+        padding-top: 35px;
+      }
+
+      .product-image {
+        min-height: auto;
+      }
+
+      .product-info h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">WUGONG 吾鋼</div>
+
+  <a class="back-link" href="category-special.html">
+    ← 返回特殊筆款
+  </a>
+</header>
+
+<main class="product">
+
+  <div class="product-image">
+
+    <!-- 富士山商品圖片之後放在這裡 -->
+
+    <div style="
+      padding:80px 20px;
+      text-align:center;
+      color:#777;
+      letter-spacing:2px;
+    ">
+      靈峰之心・富士山<br>
+      PRODUCT IMAGE
+    </div>
+
+  </div>
+
+  <div class="product-info">
+
+    <small>WUGONG · TRADITIONAL CRAFT</small>
+
+    <h1>靈峰之心・富士山</h1>
+
+    <div class="price">
+      NT$120,000
+    </div>
+
+    <div class="description">
+      以富士山為創作主題，將自然景色與傳統工藝融入鋼筆之中。
+      山峰、雪色與光影層次，在筆身上形成沉靜而深遠的景致。
+      每一件作品皆經由手工製作與反覆修整，
+      呈現 WUGONG 對材質、工藝與時間的堅持。
+    </div>
+
+    <div class="option-title">
+      筆尖規格
+    </div>
+
+    <select>
+      <option>Bock 鋼尖</option>
+    </select>
+
+    <div class="option-title">
+      數量
+    </div>
+
+    <div class="quantity">
+      <button onclick="changeQty(-1)">−</button>
+
+      <span id="qty">1</span>
+
+      <button onclick="changeQty(1)">＋</button>
+    </div>
+
+    <button class="cart-button">
+      加入購物車
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+  let quantity = 1;
+
+  function changeQty(amount) {
+    quantity += amount;
+
+    if (quantity < 1) {
+      quantity = 1;
+    }
+
+    document.getElementById("qty").textContent = quantity;
+  }
+</script>
+
+</body>
+</html>
