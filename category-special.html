@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>特殊筆款｜WUGONG</title>
+
+
+<style>
+
+/* ===== 基本設定 ===== */
+
+*{
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    margin:0;
+    background:#151515;
+    color:#eeeeee;
+
+    font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        Arial,
+        sans-serif;
+}
+
+
+/* ===== 頂部 ===== */
+
+header{
+
+    height:90px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 7%;
+
+    background:#151515;
+
+    border-bottom:1px solid #333;
+}
+
+
+.logo{
+
+    font-family:Georgia,serif;
+
+    font-size:24px;
+
+    letter-spacing:4px;
+
+    color:#c9aa6e;
+}
+
+
+.back{
+
+    color:#cccccc;
+
+    text-decoration:none;
+
+    font-size:15px;
+
+    transition:.3s;
+}
+
+
+.back:hover{
+
+    color:#c9aa6e;
+}
+
+
+/* ===== 分類標題 ===== */
+
+.category-header{
+
+    text-align:center;
+
+    padding:80px 20px 55px;
+}
+
+
+.category-header small{
+
+    color:#c9aa6e;
+
+    letter-spacing:4px;
+
+    font-size:12px;
+}
+
+
+.category-header h1{
+
+    font-size:34px;
+
+    font-weight:500;
+
+    margin:14px 0 10px;
+}
+
+
+.category-header p{
+
+    color:#999999;
+
+    font-size:14px;
+
+    margin:0;
+}
+
+
+/* ===== 商品列表 ===== */
+
+.product-list{
+
+    max-width:1200px;
+
+    margin:0 auto 100px;
+
+    padding:0 30px;
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:30px;
+}
+
+
+/* ===== 商品卡 ===== */
+
+.product-card{
+
+    background:#1b1b1b;
+
+    border:1px solid #333333;
+
+    cursor:pointer;
+
+    transition:
+        transform .3s ease,
+        border-color .3s ease;
+}
+
+
+.product-card:hover{
+
+    transform:translateY(-5px);
+
+    border-color:#c9aa6e;
+}
+
+
+.product-card img{
+
+    width:100%;
+
+    aspect-ratio:1/1;
+
+    object-fit:cover;
+
+    display:block;
+}
+
+
+.product-info{
+
+    padding:22px;
+}
+
+
+.product-info small{
+
+    color:#999999;
+
+    letter-spacing:2px;
+
+    font-size:11px;
+}
+
+
+.product-info h2{
+
+    font-size:19px;
+
+    font-weight:500;
+
+    margin:10px 0;
+}
+
+
+.price{
+
+    color:#c9aa6e;
+
+    font-size:17px;
+
+    margin-top:8px;
+}
+
+
+/* ===== 手機版 ===== */
+
+@media(max-width:700px){
+
+    header{
+
+        height:70px;
+
+        padding:0 20px;
+    }
+
+
+    .logo{
+
+        font-size:19px;
+
+        letter-spacing:3px;
+    }
+
+
+    .back{
+
+        font-size:13px;
+    }
+
+
+    .category-header{
+
+        padding:55px 20px 40px;
+    }
+
+
+    .category-header h1{
+
+        font-size:28px;
+    }
+
+
+    .product-list{
+
+        grid-template-columns:1fr;
+
+        padding:0 20px;
+
+        gap:20px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- ===== 頂部 ===== -->
+
+<header>
+
+    <div class="logo">
+        WUGONG
+    </div>
+
+
+    <a
+        class="back"
+        href="index.html#shop"
+    >
+        ← 返回線上商店
+    </a>
+
+</header>
+
+
+
+<!-- ===== 特殊筆款標題 ===== -->
+
+<section class="category-header">
+
+    <small>
+        WUGONG · FOUNTAIN PEN
+    </small>
+
+    <h1>
+        特殊筆款
+    </h1>
+
+    <p>
+        獨特設計 × 精緻工藝 × 收藏創作
+    </p>
+
+</section>
+
+
+
+<!-- ===== 商品列表 ===== -->
+
+<main class="product-list">
+
+
+    <!-- ===== 四皇•繫世（黃銅款） ===== -->
+
+    <article
+        class="product-card"
+        onclick="window.location.href='product-sihuang.html'"
+    >
+
+
+        <img
+            src="3ae35b9791735fd7743e5144e82246ec.jpg"
+            alt="四皇•繫世（黃銅款）"
+        >
+
+
+        <div class="product-info">
+
+
+            <small>
+                WUGONG · FOUNTAIN PEN
+            </small>
+
+
+            <h2>
+                四皇•繫世（黃銅款）
+            </h2>
+
+
+            <div class="price">
+                NT$13,500
+            </div>
+
+
+        </div>
+
+
+    </article>
+
+
+</main>
+
+
+
+</body>
+
+</html>
