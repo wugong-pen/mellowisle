@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>購物車｜WUGONG 吾鋼</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: #111;
+      color: #eee;
+    }
+
+    header {
+      padding: 24px 30px;
+      border-bottom: 1px solid #2d2d2d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header a {
+      color: #d6b16f;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 50px 24px 80px;
+    }
+
+    .eyebrow {
+      color: #b9975b;
+      letter-spacing: 3px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 40px;
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 22px;
+      align-items: center;
+      padding: 22px 0;
+      border-bottom: 1px solid #2b2b2b;
+    }
+
+    .cart-item img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      background: #1b1b1b;
+    }
+
+    .item-name {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .item-nib {
+      color: #aaa;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .item-price {
+      color: #d6b16f;
+      margin-bottom: 14px;
+    }
+
+    .qty-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .qty-row button {
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      color: #eee;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+
+    .qty-value {
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .remove-btn {
+      margin-top: 12px;
+      background: none;
+      border: none;
+      color: #888;
+      padding: 0;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .item-subtotal {
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .summary {
+      margin-top: 40px;
+      margin-left: auto;
+      max-width: 420px;
+      border-top: 1px solid #444;
+      padding-top: 25px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .total {
+      font-size: 22px;
+      color: #d6b16f;
+      padding-top: 16px;
+      border-top: 1px solid #333;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      background: #b9975b;
+      color: #111;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .checkout-btn:hover {
+      opacity: 0.9;
+    }
+
+    .empty-cart {
+      padding: 70px 0;
+      text-align: center;
+      color: #aaa;
+    }
+
+    .empty-cart a {
+      color: #d6b16f;
+    }
+
+    @media (max-width: 700px) {
+      .cart-item {
+        grid-template-columns: 90px 1fr;
+      }
+
+      .cart-item img {
+        width: 90px;
+        height: 90px;
+      }
+
+      .item-subtotal {
+        grid-column: 2;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html">WUGONG 吾鋼</a>
+  <a href="index.html#shop">繼續購物</a>
+</header>
+
+<main class="container">
+
+  <div class="eyebrow">SHOPPING CART</div>
+  <h1>購物車</h1>
+
+  <div id="cartItems"></div>
+
+  <div class="summary" id="cartSummary" style="display:none;">
+
+    <div class="summary-row">
+      <span>商品總額</span>
+      <span id="subtotal">NT$0</span>
+    </div>
+
+    <div class="summary-row total">
+      <span>合計</span>
+      <span id="total">NT$0</span>
+    </div>
+
+    <button class="checkout-btn" onclick="goCheckout()">
+      前往結帳
+    </button>
+
+  </div>
+
+</main>
+
+<script>
+
+  function getCart() {
+    return JSON.parse(localStorage.getItem("wugongCart")) || [];
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem("wugongCart", JSON.stringify(cart));
+  }
+
+  function renderCart() {
+
+    const cart = getCart();
+    const container = document.getElementById("cartItems");
+    const summary = document.getElementById("cartSummary");
+
+    container.innerHTML = "";
+
+    if (cart.length === 0) {
+
+      summary.style.display = "none";
+
+      container.innerHTML = `
+        <div class="empty-cart">
+          購物車目前是空的。<br><br>
+          <a href="index.html#shop">返回線上商店</a>
+        </div>
+      `;
+
+      return;
+    }
+
+    summary.style.display = "block";
+
+    let subtotal = 0;
+
+    cart.forEach((item, index) => {
+
+      const itemTotal = Number(item.price) * Number(item.quantity);
+      subtotal += itemTotal;
+
+      const row = document.createElement("div");
+      row.className = "cart-item";
+
+      row.innerHTML = `
+        <img src="${item.image}" alt="${item.product}">
+
+        <div>
+
+          <div class="item-name">
+            ${item.product}
+          </div>
+
+          ${
+            item.nib
+            ? `<div class="item-nib">筆尖：${item.nib}</div>`
+            : ""
+          }
+
+          <div class="item-price">
+            NT$${Number(item.price).toLocaleString()}
+          </div>
+
+          <div class="qty-row">
+
+            <button onclick="changeCartQty(${index}, -1)">−</button>
+
+            <div class="qty-value">
+              ${item.quantity}
+            </div>
+
+            <button onclick="changeCartQty(${index}, 1)">＋</button>
+
+          </div>
+
+          <button
+            class="remove-btn"
+            onclick="removeCartItem(${index})">
+            移除
+          </button>
+
+        </div>
+
+        <div class="item-subtotal">
+          NT$${itemTotal.toLocaleString()}
+        </div>
+      `;
+
+      container.appendChild(row);
+
+    });
+
+    document.getElementById("subtotal").textContent =
+      "NT$" + subtotal.toLocaleString();
+
+    document.getElementById("total").textContent =
+      "NT$" + subtotal.toLocaleString();
+
+  }
+
+  function changeCartQty(index, amount) {
+
+    const cart = getCart();
+
+    cart[index].quantity += amount;
+
+    if (cart[index].quantity < 1) {
+      cart[index].quantity = 1;
+    }
+
+    saveCart(cart);
+    renderCart();
+
+  }
+
+  function removeCartItem(index) {
+
+    const cart = getCart();
+
+    cart.splice(index, 1);
+
+    saveCart(cart);
+    renderCart();
+
+  }
+
+  function goCheckout() {
+    window.location.href = "checkout.html";
+  }
+
+  renderCart();
+
+</script>
+
+</body>
+</html>
