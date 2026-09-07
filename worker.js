@@ -25,6 +25,55 @@ if (url.pathname === "/api/orders" && request.method === "GET") {
         });
     }
 }
+
+// 更新訂單狀態
+if (url.pathname === "/api/order/status" && request.method === "POST") {
+  try {
+    const data = await request.json();
+
+    const allowedStatuses = [
+      "pending",
+      "confirmed",
+      "paid",
+      "shipped",
+      "completed",
+      "cancelled"
+    ];
+
+    if (!data.orderNumber || !allowedStatuses.includes(data.status)) {
+      return Response.json({
+        success: false,
+        error: "訂單編號或狀態不正確"
+      }, { status: 400 });
+    }
+
+    const result = await env.DB.prepare(`
+      UPDATE orders
+      SET status = ?
+      WHERE order_number = ?
+    `)
+      .bind(data.status, data.orderNumber)
+      .run();
+
+    if (result.meta.changes === 0) {
+      return Response.json({
+        success: false,
+        error: "找不到此訂單"
+      }, { status: 404 });
+    }
+
+    return Response.json({
+      success: true
+    });
+
+  } catch (error) {
+    return Response.json({
+      success: false,
+      error: error.message
+    }, { status: 500 });
+  }
+}
+    
     // 接收訂單
     if (url.pathname === "/api/order" && request.method === "POST") {
       try {
