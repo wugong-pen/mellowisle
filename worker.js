@@ -2,7 +2,29 @@ export default {
   async fetch(request, env) {
 
     const url = new URL(request.url);
+// 讀取訂單列表
+if (url.pathname === "/api/orders" && request.method === "GET") {
+    try {
+        const result = await env.DB.prepare(`
+            SELECT *
+            FROM orders
+            ORDER BY id DESC
+        `).all();
 
+        return Response.json({
+            success: true,
+            orders: result.results
+        });
+
+    } catch (error) {
+        return Response.json({
+            success: false,
+            error: error.message
+        }, {
+            status: 500
+        });
+    }
+}
     // 接收訂單
     if (url.pathname === "/api/order" && request.method === "POST") {
       try {
