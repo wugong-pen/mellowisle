@@ -232,7 +232,35 @@ function renderItems(items) {
         return items;
     }
 }
+async function updateStatus(orderNumber, status) {
+    try {
+        const response = await fetch("/api/order/status", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                orderNumber: orderNumber,
+                status: status
+            })
+        });
 
+        const result = await response.json();
+
+        if (!result.success) {
+            alert("更新失敗：" + (result.error || "未知錯誤"));
+            loadOrders();
+            return;
+        }
+
+        alert("訂單狀態已更新");
+        loadOrders();
+
+    } catch (error) {
+        alert("更新失敗，請稍後再試");
+        loadOrders();
+    }
+}
 async function loadOrders() {
 
     const tbody =
@@ -310,9 +338,14 @@ async function loadOrders() {
                     </td>
 
                     <td>
-                        <span class="status">
-                            ${order.status || "pending"}
-                        </span>
+  <select class="status" onchange="updateStatus('${order.order_number}', this.value)">
+    <option value="pending" ${order.status === "pending" ? "selected" : ""}>待處理</option>
+    <option value="confirmed" ${order.status === "confirmed" ? "selected" : ""}>已確認</option>
+    <option value="paid" ${order.status === "paid" ? "selected" : ""}>已付款</option>
+    <option value="shipped" ${order.status === "shipped" ? "selected" : ""}>已出貨</option>
+    <option value="completed" ${order.status === "completed" ? "selected" : ""}>已完成</option>
+    <option value="cancelled" ${order.status === "cancelled" ? "selected" : ""}>已取消</option>
+</select>
                     </td>
 
                     <td>
