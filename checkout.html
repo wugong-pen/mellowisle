@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>結帳｜WUGONG 吾鋼</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #111;
+      color: #eee;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+    }
+
+    header {
+      padding: 24px 30px;
+      border-bottom: 1px solid #2d2d2d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header a {
+      color: #d6b16f;
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 50px 24px 80px;
+    }
+
+    .eyebrow {
+      color: #b9975b;
+      letter-spacing: 3px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 40px;
+      font-size: 32px;
+      font-weight: 500;
+    }
+
+    .checkout-layout {
+      display: grid;
+      grid-template-columns: 1.35fr 0.85fr;
+      gap: 50px;
+    }
+
+    .section {
+      margin-bottom: 38px;
+    }
+
+    .section h2 {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #333;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 14px 15px;
+      background: #181818;
+      color: #eee;
+      border: 1px solid #3a3a3a;
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #b9975b;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .radio-box {
+      border: 1px solid #333;
+      padding: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .radio-box input {
+      width: auto;
+      margin-right: 8px;
+    }
+
+    .order-box {
+      border: 1px solid #333;
+      padding: 24px;
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+    }
+
+    .order-box h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .order-item {
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid #2d2d2d;
+    }
+
+    .order-item img {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+    }
+
+    .order-name {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .order-meta {
+      color: #999;
+      font-size: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+
+    .total {
+      font-size: 20px;
+      color: #d6b16f;
+      padding-top: 18px;
+      border-top: 1px solid #444;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 16px;
+      background: #b9975b;
+      color: #111;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      opacity: 0.9;
+    }
+
+    .notice {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 850px) {
+      .checkout-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .order-box {
+        position: static;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <a href="index.html">WUGONG 吾鋼</a>
+  <a href="cart.html">← 返回購物車</a>
+</header>
+
+<main class="container">
+
+  <div class="eyebrow">CHECKOUT</div>
+  <h1>結帳</h1>
+
+  <div class="checkout-layout">
+
+    <div>
+
+      <section class="section">
+        <h2>聯絡資料</h2>
+
+        <div class="two-col">
+          <div class="field">
+            <label for="name">姓名 *</label>
+            <input id="name" type="text" required>
+          </div>
+
+          <div class="field">
+            <label for="phone">手機 *</label>
+            <input id="phone" type="tel" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="email">Email *</label>
+          <input id="email" type="email" required>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>配送資料</h2>
+
+        <div class="field">
+          <label for="shipping">配送方式 *</label>
+          <select id="shipping">
+            <option value="宅配">宅配</option>
+            <option value="超商取貨">超商取貨</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="address">收件地址 *</label>
+          <input id="address" type="text">
+        </div>
+
+        <div class="field">
+          <label for="note">訂單備註</label>
+          <textarea id="note" placeholder="如有特殊需求可填寫於此"></textarea>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>付款方式</h2>
+
+        <label class="radio-box">
+          <input type="radio" name="payment" value="bank" checked>
+          銀行轉帳
+        </label>
+
+        <label class="radio-box">
+          <input type="radio" name="payment" value="card">
+          信用卡付款
+        </label>
+
+        <label class="radio-box">
+          <input type="radio" name="payment" value="linepay">
+          LINE Pay
+        </label>
+      </section>
+
+    </div>
+
+    <aside class="order-box">
+
+      <h2>訂單摘要</h2>
+
+      <div id="orderItems"></div>
+
+      <div class="summary-row">
+        <span>商品總額</span>
+        <span id="subtotal">NT$0</span>
+      </div>
+
+      <div class="summary-row total">
+        <span>合計</span>
+        <span id="total">NT$0</span>
+      </div>
+
+      <button class="submit-btn" onclick="submitOrder()">
+        確認訂單
+      </button>
+
+      <div class="notice">
+        此頁目前為訂單資料確認流程。<br>
+        正式信用卡、LINE Pay 等金流會於下一階段串接。
+      </div>
+
+    </aside>
+
+  </div>
+
+</main>
+
+<script>
+
+  function getCart() {
+    return JSON.parse(localStorage.getItem("wugongCart")) || [];
+  }
+
+  function renderOrder() {
+
+    const cart = getCart();
+    const box = document.getElementById("orderItems");
+
+    box.innerHTML = "";
+
+    if (cart.length === 0) {
+      window.location.href = "cart.html";
+      return;
+    }
+
+    let subtotal = 0;
+
+    cart.forEach(item => {
+
+      const itemTotal =
+        Number(item.price) * Number(item.quantity);
+
+      subtotal += itemTotal;
+
+      const div = document.createElement("div");
+      div.className = "order-item";
+
+      div.innerHTML = `
+        <img src="${item.image}" alt="${item.product}">
+
+        <div>
+          <div class="order-name">
+            ${item.product}
+          </div>
+
+          <div class="order-meta">
+            ${item.nib ? "筆尖：" + item.nib + "<br>" : ""}
+            數量：${item.quantity}
+          </div>
+        </div>
+
+        <div>
+          NT$${itemTotal.toLocaleString()}
+        </div>
+      `;
+
+      box.appendChild(div);
+
+    });
+
+    document.getElementById("subtotal").textContent =
+      "NT$" + subtotal.toLocaleString();
+
+    document.getElementById("total").textContent =
+      "NT$" + subtotal.toLocaleString();
+
+  }
+
+  function submitOrder() {
+
+    const name =
+      document.getElementById("name").value.trim();
+
+    const phone =
+      document.getElementById("phone").value.trim();
+
+    const email =
+      document.getElementById("email").value.trim();
+
+    const address =
+      document.getElementById("address").value.trim();
+
+    if (!name || !phone || !email || !address) {
+      alert("請完整填寫姓名、手機、Email 與收件地址。");
+      return;
+    }
+
+    alert(
+      "訂單資料填寫完成。下一階段將串接正式付款與訂單系統。"
+    );
+
+  }
+
+  renderOrder();
+
+</script>
+
+</body>
+</html>
