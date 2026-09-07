@@ -382,7 +382,7 @@
 
   }
 
-  function submitOrder() {
+  async function submitOrder() {
 
     const name =
       document.getElementById("name").value.trim();
@@ -407,7 +407,9 @@ const note =
 
 const cart =
   JSON.parse(localStorage.getItem("wugongCart")) || [];
-
+const total = cart.reduce((sum, item) => {
+  return sum + (Number(item.price) * Number(item.quantity || 1));
+}, 0);
 const orderNumber =
   "WG" + Date.now();
     
@@ -428,6 +430,7 @@ const orderNumber =
   payment: payment,
   note: note,
   items: cart,
+  total: total,    
   createdAt: new Date().toISOString()
 };
 
