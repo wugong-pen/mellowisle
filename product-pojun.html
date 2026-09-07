@@ -418,10 +418,25 @@ NT$25,000
 </div>
 
 
-<button class="add-cart" onclick="addToCart()">
-加入購物車
-</button>
+<div style="display:flex; gap:12px; margin-top:18px;">
 
+  <button
+    class="add-cart"
+    onclick="addToCart()"
+    style="flex:1;"
+  >
+    加入購物車
+  </button>
+
+  <button
+    class="add-cart"
+    onclick="window.location.href='cart.html'"
+    style="flex:1; background:transparent; color:#d6b16f; border:1px solid #d6b16f;"
+  >
+    查看購物車
+  </button>
+
+</div>
 
 <div class="details">
 
