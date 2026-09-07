@@ -434,6 +434,29 @@ const orderNumber =
   createdAt: new Date().toISOString()
 };
 
+  try {
+  const response = await fetch("/api/order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(order)
+  });
+
+  const result = await response.json();
+
+  if (!result.success) {
+    alert("訂單建立失敗：" + (result.error || "未知錯誤"));
+    return;
+  }
+
+  alert("訂單建立成功！訂單編號：" + result.orderNumber);
+
+} catch (error) {
+  alert("訂單送出失敗，請稍後再試。");
+  return;
+}  
+
     alert(
       "訂單資料填寫完成。下一階段將串接正式付款與訂單系統。"
     );
