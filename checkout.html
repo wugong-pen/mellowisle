@@ -396,10 +396,40 @@
     const address =
       document.getElementById("address").value.trim();
 
+const payment =
+  document.querySelector('input[name="payment"]:checked').value;
+
+const shipping =
+  document.getElementById("shipping").value;
+
+const note =
+  document.getElementById("note").value.trim();
+
+const cart =
+  JSON.parse(localStorage.getItem("wugongCart")) || [];
+
+const orderNumber =
+  "WG" + Date.now();
+    
     if (!name || !phone || !email || !address) {
       alert("請完整填寫姓名、手機、Email 與收件地址。");
       return;
     }
+
+    const order = {
+  orderNumber: orderNumber,
+  customer: {
+    name: name,
+    phone: phone,
+    email: email,
+    address: address
+  },
+  shipping: shipping,
+  payment: payment,
+  note: note,
+  items: cart,
+  createdAt: new Date().toISOString()
+};
 
     alert(
       "訂單資料填寫完成。下一階段將串接正式付款與訂單系統。"
