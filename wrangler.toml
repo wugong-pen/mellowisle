@@ -5,3 +5,8 @@ compatibility_date = "2026-09-07"
 [assets]
 directory = "./"
 binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "武功令"
+database_id = "dd1346b0-8c57-491c-a730-49ff2d73855c"
