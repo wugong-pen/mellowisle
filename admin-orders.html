@@ -261,6 +261,10 @@ async function updateStatus(orderNumber, status) {
         loadOrders();
     }
 }
+    function showOrderDetails(orderNumber) {
+  window.location.href =
+    "admin-order-detail.html?order=" + encodeURIComponent(orderNumber);
+}
 async function loadOrders() {
 
     const tbody =
@@ -307,9 +311,17 @@ async function loadOrders() {
 
                 <tr>
 
-                    <td class="order-number">
-                        ${order.order_number || ""}
-                    </td>
+                  <td class="order-number">
+  ${order.order_number || ""}
+  <br>
+  <button
+    type="button"
+    onclick="showOrderDetails('${order.order_number}')"
+    style="margin-top:8px; padding:5px 10px; cursor:pointer;"
+  >
+    查看詳情
+  </button>
+</td>
 
                     <td>
                         ${order.customer_name || ""}
