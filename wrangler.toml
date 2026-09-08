@@ -1,12 +1,34 @@
-name = "wugong"
+# Default deployment is always the isolated test site.
+name = "wugong-test"
 main = "worker.js"
 compatibility_date = "2026-09-07"
 
 [assets]
 directory = "./"
 binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+APP_ENV = "staging"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "武功令"
+database_name = "wugong-orders-test"
+database_id = "0ec61e02-9f1a-4d7f-a4a5-7950934443bf"
+
+# Only deploy after approval of the tested commit.
+[env.production]
+name = "wugong"
+
+[env.production.assets]
+directory = "./"
+binding = "ASSETS"
+run_worker_first = true
+
+[env.production.vars]
+APP_ENV = "production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "wugong-orders"
 database_id = "dd1346b0-8c57-491c-a730-49ff2d73855c"

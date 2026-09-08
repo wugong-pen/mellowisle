@@ -2,6 +2,9 @@ export default {
   async fetch(request, env) {
 
     const url = new URL(request.url);
+    if (env.APP_ENV === "staging" && url.pathname === "/robots.txt") {
+      return new Response("User-agent: *\nDisallow: /\n", {headers: {"Content-Type": "text/plain; charset=utf-8"}});
+    }
 // 讀取訂單列表
 if (url.pathname === "/api/orders" && request.method === "GET") {
     try {
@@ -129,6 +132,15 @@ if (url.pathname === "/api/order/status" && request.method === "POST") {
     }
 
     // 其他網址繼續顯示原本網站
-    return env.ASSETS.fetch(request);
+        const response = await env.ASSETS.fetch(request);
+    if (env.APP_ENV !== "staging") return response;
+    const stagingResponse = new Response(response.body, response);
+    stagingResponse.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    if (!response.headers.get("Content-Type")?.includes("text/html")) return stagingResponse;
+    return new HTMLRewriter().on("body", {
+      element(element) {
+        element.prepend('<aside role="note" style="position:relative;z-index:9999;background:#fff1c2;color:#342300;padding:12px 16px;text-align:center;font:600 16px/1.5 sans-serif">測試版｜僅供功能確認，請勿填寫真實個資或付款。測試訂單與正式版分開。</aside>', {html: true});
+      }
+    }).transform(stagingResponse);
   }
 };

@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+.wrangler
+.dev.vars*
+.env*
+AGENTS.md
+RELEASE.md
+worker.js
+wrangler.toml
+*.sql
+*.test.mjs
+package*.json
