@@ -6,6 +6,11 @@
 <main>
 <p class="eyebrow">YOUR WUGONG</p><h1>會員中心</h1>
 <p id="message" role="status" aria-live="polite">正在確認登入狀態…</p>
+<section id="emailAction" class="panel" hidden>
+  <form id="verifyEmailForm" hidden><h2>驗證電子郵件</h2><p>按下確認，即可驗證這個會員帳號的電子郵件。</p><button class="primary" type="submit">確認驗證</button></form>
+  <form id="resetPasswordForm" hidden><h2>設定新密碼</h2><label>新密碼<input name="password" type="password" autocomplete="new-password" minlength="15" maxlength="128" required></label><label>再次輸入新密碼<input name="confirmPassword" type="password" autocomplete="new-password" minlength="15" maxlength="128" required></label><p class="hint">15 至 128 個字元。重設後所有裝置會登出，請使用新密碼重新登入。</p><button class="primary" type="submit">重設密碼</button></form>
+  <p><a href="/member">返回會員登入</a></p>
+</section>
 <section id="auth" hidden>
   <p id="checkoutNotice" class="notice" hidden>請先登入或註冊，再繼續結帳。購物車商品會保留。</p>
   <div class="tabs" aria-label="會員登入與註冊"><button id="loginTab" type="button" aria-pressed="true">會員登入</button><button id="registerTab" type="button" aria-pressed="false">建立帳號</button></div>
@@ -16,7 +21,9 @@
         <label>電子郵件<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
         <label>密碼<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
         <button class="primary" type="submit">登入</button>
+        <button id="forgotPassword" type="button">忘記密碼</button>
       </form>
+      <form id="forgotPasswordForm" hidden><h2>忘記密碼</h2><p>輸入註冊時使用的電子郵件，我們會寄送重設密碼連結。</p><label>電子郵件<input name="email" type="email" autocomplete="username" maxlength="254" required></label><p id="mailSetupNotice" class="hint" hidden>寄信服務準備中，目前尚無法寄送重設密碼信。</p><button id="sendReset" class="primary" type="submit">寄送重設連結</button><button id="backToLogin" type="button">返回登入</button></form>
       <form id="registerForm" hidden>
         <h2>加入 WUGONG</h2>
         <label>電子郵件<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
@@ -34,6 +41,7 @@
 </section>
 <section id="account" hidden>
   <div class="account-heading"><div><h2 id="welcome"></h2><p id="accountEmail" class="hint"></p></div><button type="button" id="logout">登出</button></div>
+  <div class="notice"><p id="emailStatus"></p><button id="resendVerification" type="button" hidden>重新寄送驗證信</button></div>
   <a id="continueCheckout" class="primary link-button" href="/checkout.html" hidden>繼續結帳 →</a>
   <div class="account-layout">
     <section class="panel"><h2>個人資料</h2>

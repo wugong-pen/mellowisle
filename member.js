@@ -1,23 +1,33 @@
 import {countryOptions} from './countries.js';
 const $=id=>document.getElementById(id);
 const next=new URLSearchParams(location.search).get('next')==='checkout';
-let page=1,member=null;
+let page=1,member=null,emailAvailable=false;
+const emailLink=new URLSearchParams(location.hash.slice(1));
+let emailAction=['verify','reset'].includes(emailLink.get('action'))?emailLink.get('action'):null;
+const emailToken=emailLink.get('token');
+if(emailAction)history.replaceState(null,'',location.pathname+location.search);
 function message(value,error=false){$('message').textContent=value;$('message').classList.toggle('error',error);}
 async function api(path,method='GET',data){
   const response=await fetch(path,{method,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
   const result=await response.json();
   if(!response.ok){if(response.status===401&&member){member=null;showAuth();}throw new Error(result.error||'暫時無法完成，請稍後再試');}return result;
 }
-function tab(register){$('loginForm').hidden=register;$('registerForm').hidden=!register;$('loginTab').setAttribute('aria-pressed',String(!register));$('registerTab').setAttribute('aria-pressed',String(register));message('');}
+function tab(register){$('forgotPasswordForm').hidden=true;$('loginForm').hidden=register;$('registerForm').hidden=!register;$('loginTab').setAttribute('aria-pressed',String(!register));$('registerTab').setAttribute('aria-pressed',String(register));message('');}
 function showAuth(){member=null;$('auth').hidden=false;$('account').hidden=true;$('checkoutNotice').hidden=!next;$('orders').replaceChildren();$('profileForm').reset();$('passwordForm').reset();}
-async function showAccount(m){member=m;$('auth').hidden=true;$('account').hidden=false;$('welcome').textContent=`${m.name}，您好`;$('accountEmail').textContent=m.email;$('continueCheckout').hidden=!next;for(const key of ['name','birthday','country','phone','address'])$('profileForm').elements[key].value=m[key]||'';await loadOrders(true);}
+async function showAccount(m){member=m;$('auth').hidden=true;$('account').hidden=false;$('welcome').textContent=`${m.name}，您好`;$('accountEmail').textContent=m.email;$('emailStatus').textContent=m.emailVerified?'電子郵件已驗證':emailAvailable?'電子郵件尚未驗證，請查看信箱中的驗證信。':'電子郵件尚未驗證；寄信服務準備中。';$('resendVerification').hidden=m.emailVerified||!emailAvailable;$('continueCheckout').hidden=!next;for(const key of ['name','birthday','country','phone','address'])$('profileForm').elements[key].value=m[key]||'';await loadOrders(true);}
 function data(form){return Object.fromEntries(new FormData(form));}
 function submit(form,action){form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type=submit]');button.disabled=true;message('處理中…');try{await action(data(form));}catch(error){message(error.message||'連線失敗，請稍後再試',true);}finally{button.disabled=false;}});}
 function confirmPassword(d){if(d.password!==d.confirmPassword)throw new Error('兩次輸入的密碼不一致');}
 for(const select of document.querySelectorAll('select[name=country]'))countryOptions(select);
 for(const input of document.querySelectorAll('input[type=date]'))input.max=new Date().toISOString().slice(0,10);
 $('loginTab').addEventListener('click',()=>tab(false));$('registerTab').addEventListener('click',()=>tab(true));
-for(const [id,path]of [['loginForm','login'],['registerForm','register']])submit($(id),async d=>{if(path==='register')confirmPassword(d);const result=await api(`/api/member/${path}`,'POST',d);$(id).reset();if(next){location.assign('/checkout.html');return;}message(path==='register'?'帳號已建立，歡迎加入 WUGONG。':'登入成功');await showAccount(result.member);});
+for(const [id,path]of [['loginForm','login'],['registerForm','register']])submit($(id),async d=>{if(path==='register')confirmPassword(d);const result=await api(`/api/member/${path}`,'POST',d);emailAvailable=result.emailAvailable;$(id).reset();if(next){location.assign('/checkout.html');return;}message(path==='register'?(result.verificationSent?'帳號已建立，驗證信已寄出。請查看收件匣與垃圾郵件。':'帳號已建立，歡迎加入 WUGONG。'):'登入成功');await showAccount(result.member);});
+$('forgotPassword').addEventListener('click',()=>{tab(false);$('loginForm').hidden=true;$('forgotPasswordForm').hidden=false;$('sendReset').disabled=!emailAvailable;$('mailSetupNotice').hidden=emailAvailable;});
+$('backToLogin').addEventListener('click',()=>tab(false));
+submit($('forgotPasswordForm'),async d=>{const result=await api('/api/member/forgot-password','POST',d);message(result.message);});
+$('resendVerification').addEventListener('click',async()=>{const button=$('resendVerification');button.disabled=true;try{await api('/api/member/resend-verification','POST',{});message('驗證信已寄出，請查看收件匣與垃圾郵件。');}catch(e){message(e.message,true);}finally{button.disabled=false;}});
+submit($('verifyEmailForm'),async()=>{await api('/api/member/verify-email','POST',{token:emailToken});emailAction=null;$('emailAction').hidden=true;await initialize();message('電子郵件驗證完成。');});
+submit($('resetPasswordForm'),async d=>{confirmPassword(d);await api('/api/member/reset-password','POST',{token:emailToken,password:d.password});$('resetPasswordForm').reset();emailAction=null;$('emailAction').hidden=true;showAuth();tab(false);message('密碼已重設，請使用新密碼登入。');});
 submit($('profileForm'),async d=>{const result=await api('/api/member','PATCH',d);member=result.member;$('welcome').textContent=`${member.name}，您好`;message('會員資料已儲存');});
 submit($('passwordForm'),async d=>{confirmPassword(d);await api('/api/member/password','POST',d);showAuth();tab(false);message('密碼已更新，請重新登入。');});
 $('logout').addEventListener('click',async()=>{try{await api('/api/member/logout','POST',{});showAuth();tab(false);message('已安全登出');}catch(e){message(e.message,true);}});
@@ -41,6 +51,6 @@ async function loadOrders(reset=false){
   catch(e){message(e.message,true);}finally{button.disabled=false;$('refreshOrders').disabled=false;}
 }
 $('moreOrders').addEventListener('click',()=>loadOrders());$('refreshOrders').addEventListener('click',()=>loadOrders(true));
-async function initialize(){try{const result=await api('/api/member');message('');if(result.member)await showAccount(result.member);else showAuth();}catch(e){message('無法載入會員資料，請重新整理後再試。',true);}}
+async function initialize(){try{const result=await api('/api/member');emailAvailable=result.emailAvailable;message('');if(emailAction){$('auth').hidden=true;$('account').hidden=true;$('emailAction').hidden=false;$('verifyEmailForm').hidden=emailAction!=='verify';$('resetPasswordForm').hidden=emailAction!=='reset';return;}if(result.member)await showAccount(result.member);else showAuth();}catch(e){message('無法載入會員資料，請重新整理後再試。',true);}}
 window.addEventListener('pageshow',e=>{if(e.persisted)initialize();});
 initialize();

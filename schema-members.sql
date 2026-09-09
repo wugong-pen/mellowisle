@@ -33,3 +33,18 @@ CREATE TABLE IF NOT EXISTS member_rate_limits (
  expires_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS member_rate_limits_expiry ON member_rate_limits(expires_at);
+
+CREATE TABLE IF NOT EXISTS member_email_verified (
+ member_id TEXT PRIMARY KEY REFERENCES members(id) ON DELETE CASCADE,
+ verified_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS member_email_tokens (
+ token_hash TEXT PRIMARY KEY,
+ member_id TEXT NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+ purpose TEXT NOT NULL CHECK(purpose IN ('verify','reset')),
+ password_snapshot TEXT NOT NULL,
+ expires_at INTEGER NOT NULL,
+ consumed_by TEXT
+);
+CREATE INDEX IF NOT EXISTS member_email_tokens_member ON member_email_tokens(member_id);
+CREATE INDEX IF NOT EXISTS member_email_tokens_expiry ON member_email_tokens(expires_at);

@@ -55,3 +55,46 @@ test('member lifecycle, owner-only orders, validation and session revocation',as
  assert.equal(DB.sql.prepare('SELECT count(*) n FROM orders').get().n,1);
 });
 
+
+test('email verification and password reset: one-use, expiry, isolation and revocation',async t=>{
+ const DB=database(),mail=[];
+ const env={DB,APP_ENV:'staging',RESEND_API_KEY:'test-only',MAIL_FROM:'WUGONG <noreply@example.test>',MAIL_ORIGIN:'https://shop.test',ASSETS:{fetch:async()=>new Response('asset')}};
+ t.mock.method(globalThis,'fetch',async(url,options)=>{assert.equal(url,'https://api.resend.com/emails');mail.push(JSON.parse(options.body));return Response.json({id:'test-mail'});});
+ const call=async(path,method='GET',data,token='')=>{const r=await worker.fetch(new Request('https://shop.test'+path,{method,headers:{Origin:'https://shop.test','Content-Type':'application/json',Cookie:token},body:data===undefined?undefined:JSON.stringify(data)}),env);return{status:r.status,data:await r.json(),cookie:r.headers.get('set-cookie')?.split(';')[0]};};
+ const payload={email:'email-a@example.test',password:'original long test password',name:'郵件測試甲',birthday:'1990-01-01',country:'TW'};
+ const a=await call('/api/member/register','POST',payload);assert.equal(a.status,200);assert.equal(a.data.verificationSent,true);assert.equal(a.data.member.emailVerified,false);
+ const token=()=>new URLSearchParams(mail.at(-1).text.match(/https:\/\/shop.test\/member#([^\s]+)/)[1]).get('token');
+ const verifyA=token();assert.ok(!JSON.stringify(a.data).includes(verifyA));assert.ok(!JSON.stringify(DB.sql.prepare('SELECT * FROM member_email_tokens').all()).includes(verifyA));
+ const b=await call('/api/member/register','POST',{...payload,email:'email-b@example.test'});assert.equal(b.status,200);
+ assert.equal((await call('/api/member/verify-email','POST',{token:verifyA},b.cookie)).status,200);
+ assert.equal((await call('/api/member','GET',undefined,a.cookie)).data.member.emailVerified,true);
+ assert.equal((await call('/api/member','GET',undefined,b.cookie)).data.member.emailVerified,false);
+ assert.equal((await call('/api/member/verify-email','POST',{token:verifyA})).status,400);
+ const forgot=await call('/api/member/forgot-password','POST',{email:payload.email});const reset=token();
+ const absent=await call('/api/member/forgot-password','POST',{email:'absent@example.test'});assert.deepEqual(forgot.data,absent.data);
+ assert.equal((await call('/api/member/verify-email','POST',{token:reset})).status,400);
+ const newPassword='replacement long test password';
+ assert.equal((await call('/api/member/reset-password','POST',{token:reset,password:newPassword})).status,200);
+ assert.equal((await call('/api/member/reset-password','POST',{token:reset,password:'second replacement long password'})).status,400);
+ assert.equal((await call('/api/member','GET',undefined,a.cookie)).data.member,null);
+ assert.equal((await call('/api/member/login','POST',{email:payload.email,password:payload.password})).status,401);
+ const login=await call('/api/member/login','POST',{email:payload.email,password:newPassword});assert.equal(login.status,200);
+ await call('/api/member/forgot-password','POST',{email:payload.email});const expired=token();DB.sql.exec('UPDATE member_email_tokens SET expires_at=0');
+ assert.equal((await call('/api/member/reset-password','POST',{token:expired,password:newPassword})).status,400);
+ await call('/api/member/forgot-password','POST',{email:payload.email});const invalidated=token();
+ assert.equal((await call('/api/member/password','POST',{currentPassword:newPassword,password:'changed again long password'},login.cookie)).status,200);
+ assert.equal((await call('/api/member/reset-password','POST',{token:invalidated,password:newPassword})).status,400);
+ assert.equal((await call('/api/member/resend-verification','POST',{},b.cookie)).status,200);const verifyExpired=token();DB.sql.exec('UPDATE member_email_tokens SET expires_at=0');
+ assert.equal((await call('/api/member/verify-email','POST',{token:verifyExpired})).status,400);
+ env.MAIL_ORIGIN='https://different.test';
+ assert.equal((await call('/api/member/forgot-password','POST',{email:payload.email})).status,503);
+ assert.equal((await call('/api/member')).data.emailAvailable,false);
+ DB.sql.close();
+});
+
+test('mail failures preserve registered account and never mark unsent mail as sent',async t=>{
+ const DB=database();const env={DB,APP_ENV:'staging',RESEND_API_KEY:'test-only',MAIL_FROM:'noreply@example.test',MAIL_ORIGIN:'https://shop.test'};
+ t.mock.method(globalThis,'fetch',async()=>Response.json({error:'simulated'},{status:503}));
+ const r=await worker.fetch(new Request('https://shop.test/api/member/register',{method:'POST',headers:{Origin:'https://shop.test','Content-Type':'application/json'},body:JSON.stringify({email:'failure@example.test',password:'long test password for failure',name:'測試',birthday:'1990-01-01',country:'TW'})}),env);
+ assert.equal(r.status,200);assert.equal((await r.json()).verificationSent,false);assert.equal(DB.sql.prepare('SELECT count(*) n FROM member_email_tokens').get().n,0);assert.equal(DB.sql.prepare('SELECT count(*) n FROM members').get().n,1);DB.sql.close();
+});

@@ -8,7 +8,7 @@ const digest = async value => hex(await crypto.subtle.digest('SHA-256',new TextE
 class HttpError extends Error { constructor(status,message) { super(message); this.status=status; } }
 const fail = (status,message) => {throw new HttpError(status,message);};
 const json = (data,status=200,headers={}) => Response.json(data,{status,headers:{'Cache-Control':'no-store',...headers}});
-const publicMember = m => ({id:m.id,email:m.email,name:m.name,birthday:m.birthday,country:m.country,phone:m.phone,address:m.address,createdAt:m.created_at});
+const publicMember = m => ({id:m.id,email:m.email,name:m.name,birthday:m.birthday,country:m.country,phone:m.phone,address:m.address,createdAt:m.created_at,emailVerified:!!m.email_verified});
 const cookie = (token,age=TTL) => `${COOKIE}=${token}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${age}`;
 function text(value,max,label,required=true) {
   if(typeof value!=='string'||value.trim().length>max||(required&&!value.trim())) fail(400,`請確認${label}`);
@@ -58,36 +58,96 @@ async function rate(env,key,limit) {
 }
 async function session(request,env,required=true) {
   const token=(request.headers.get('Cookie')||'').split(';').map(v=>v.trim()).find(v=>v.startsWith(`${COOKIE}=`))?.slice(COOKIE.length+1);
-  const member=token&&/^[a-f0-9]{64}$/.test(token)?await env.DB.prepare('SELECT m.*,s.token_hash FROM member_sessions s JOIN members m ON m.id=s.member_id WHERE s.token_hash=? AND s.expires_at>? AND m.active=1').bind(await digest(token),now()).first():null;
+  const member=token&&/^[a-f0-9]{64}$/.test(token)?await env.DB.prepare('SELECT m.*,s.token_hash,EXISTS(SELECT 1 FROM member_email_verified v WHERE v.member_id=m.id) AS email_verified FROM member_sessions s JOIN members m ON m.id=s.member_id WHERE s.token_hash=? AND s.expires_at>? AND m.active=1').bind(await digest(token),now()).first():null;
   if(!member&&required) fail(401,'請先登入會員');return member;
 }
-async function issueSession(env,member,request) {
+async function issueSession(env,member,request,extra={}) {
   const token=random(),previous=await session(request,env,false);
   const statements=[env.DB.prepare('INSERT INTO member_sessions(token_hash,member_id,expires_at) VALUES (?,?,?)').bind(await digest(token),member.id,now()+TTL),env.DB.prepare('DELETE FROM member_sessions WHERE expires_at<=?').bind(now()),env.DB.prepare('DELETE FROM member_rate_limits WHERE expires_at<=?').bind(now())];
   if(previous) statements.push(env.DB.prepare('DELETE FROM member_sessions WHERE token_hash=?').bind(previous.token_hash));
   await env.DB.batch(statements);
-  return json({success:true,member:publicMember(member)},200,{'Set-Cookie':cookie(token)});
+  return json({success:true,member:publicMember(member),emailAvailable:mailAvailable(env,new URL(request.url)),...extra},200,{'Set-Cookie':cookie(token)});
 }
-async function api(request,env,url) {
+function mailAvailable(env,url) {
+  return !!(env.RESEND_API_KEY&&env.MAIL_FROM&&env.MAIL_ORIGIN===url.origin&&url.protocol==='https:');
+}
+async function sendMemberEmail(env,m,purpose,url) {
+  if(!mailAvailable(env,url))fail(503,'寄信服務準備中，請稍後再試');
+  const token=random(),tokenHash=await digest(token),minutes=purpose==='reset'?30:1440;
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM member_email_tokens WHERE expires_at<=?').bind(now()),
+    env.DB.prepare('INSERT INTO member_email_tokens(token_hash,member_id,purpose,password_snapshot,expires_at) VALUES (?,?,?,?,?)').bind(tokenHash,m.id,purpose,m.password_hash,now()+minutes*60)
+  ]);
+  const link=`${env.MAIL_ORIGIN}/member#${new URLSearchParams({action:purpose,token})}`;
+  const title=purpose==='reset'?'重設 WUGONG 會員密碼':'驗證 WUGONG 會員電子郵件';
+  const content=`${title}\n\n請開啟以下連結完成操作：\n${link}\n\n連結有效時間：${purpose==='reset'?'30 分鐘':'24 小時'}，只能使用一次。\n若您未申請此操作，請忽略此信。請勿將連結轉寄給他人。`;
+  try {
+    const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':tokenHash},body:JSON.stringify({from:env.MAIL_FROM,to:[m.email],subject:(env.APP_ENV==='staging'?'【測試站】':'')+title,text:content}),signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw new Error(`Mail provider status ${response.status}`);
+    const result=await response.json();if(!result.id)throw new Error('Missing mail receipt');
+  }catch{
+    await env.DB.prepare('DELETE FROM member_email_tokens WHERE token_hash=?').bind(tokenHash).run();
+    fail(503,'暫時無法寄信，請稍後再試');
+  }
+}
+async function consumeEmailToken(request,env,purpose) {
+  await rate(env,`email-token:${request.headers.get('CF-Connecting-IP')||'local'}`,30);
+  const data=await body(request);
+  if(typeof data.token!=='string'||!/^[a-f0-9]{64}$/.test(data.token))fail(400,'連結無效或已過期，請重新申請');
+  const tokenHash=await digest(data.token);
+  const row=await env.DB.prepare('SELECT t.*,m.password_hash FROM member_email_tokens t JOIN members m ON m.id=t.member_id WHERE t.token_hash=? AND t.purpose=? AND t.expires_at>? AND t.consumed_by IS NULL AND m.active=1 AND m.password_hash=t.password_snapshot').bind(tokenHash,purpose,now()).first();
+  if(!row)fail(400,'連結無效或已過期，請重新申請');
+  const newHash=purpose==='reset'?await hashPassword(password(data.password)):null;
+  const claim=random();
+  const owns='EXISTS(SELECT 1 FROM member_email_tokens WHERE token_hash=? AND consumed_by=?)';
+  const statements=[env.DB.prepare('UPDATE member_email_tokens SET consumed_by=? WHERE token_hash=? AND consumed_by IS NULL AND expires_at>? AND EXISTS(SELECT 1 FROM members WHERE id=member_email_tokens.member_id AND active=1 AND password_hash=member_email_tokens.password_snapshot)').bind(claim,tokenHash,now())];
+  if(purpose==='reset')statements.push(
+    env.DB.prepare(`UPDATE members SET password_hash=?,updated_at=? WHERE id=? AND ${owns}`).bind(newHash,new Date().toISOString(),row.member_id,tokenHash,claim),
+    env.DB.prepare(`DELETE FROM member_sessions WHERE member_id=? AND ${owns}`).bind(row.member_id,tokenHash,claim)
+  );
+  statements.push(env.DB.prepare(`INSERT OR IGNORE INTO member_email_verified(member_id,verified_at) SELECT ?,? WHERE ${owns}`).bind(row.member_id,now(),tokenHash,claim));
+  statements.push(env.DB.prepare(`DELETE FROM member_email_tokens WHERE member_id=? AND token_hash<>? AND ${owns}`).bind(row.member_id,tokenHash,tokenHash,claim));
+  const results=await env.DB.batch(statements);
+  if(!results[0].meta.changes)fail(400,'連結無效或已過期，請重新申請');
+  return json({success:true},200,purpose==='reset'?{'Set-Cookie':cookie('',0)}:{});
+}
+async function api(request,env,url,ctx) {
   const path=url.pathname,method=request.method;
   if(!['GET','HEAD'].includes(method)&&(request.headers.get('Origin')!==url.origin||request.headers.get('Sec-Fetch-Site')==='cross-site')) fail(403,'請從本站頁面操作');
   // Legacy unauthenticated admin access stays closed until admin provisioning exists.
   if(path==='/api/orders'||path==='/api/order/status') fail(403,'此功能僅限管理員，管理員登入功能尚未開放');
-  if(path==='/api/member'&&method==='GET') {const m=await session(request,env,false);return json({success:true,member:m?publicMember(m):null});}
+  if(path==='/api/member'&&method==='GET') {const m=await session(request,env,false);return json({success:true,member:m?publicMember(m):null,emailAvailable:mailAvailable(env,url)});}
+  if(path==='/api/member/verify-email'&&method==='POST')return consumeEmailToken(request,env,'verify');
+  if(path==='/api/member/reset-password'&&method==='POST')return consumeEmailToken(request,env,'reset');
+  if(path==='/api/member/resend-verification'&&method==='POST') {
+    const m=await session(request,env);if(m.email_verified)return json({success:true,alreadyVerified:true});
+    await rate(env,`verify-mail:${m.id}`,3);await sendMemberEmail(env,m,'verify',url);return json({success:true});
+  }
+  if(path==='/api/member/forgot-password'&&method==='POST') {
+    if(!mailAvailable(env,url))fail(503,'寄信服務準備中，請稍後再試');
+    await rate(env,`forgot-ip:${request.headers.get('CF-Connecting-IP')||'local'}`,10);
+    const address=email((await body(request)).email);await rate(env,`forgot-email:${address}`,3);
+    const m=await env.DB.prepare('SELECT * FROM members WHERE email=? AND active=1').bind(address).first();
+    if(m){const delivery=sendMemberEmail(env,m,'reset',url).catch(()=>console.error('Password reset email delivery failed'));if(ctx?.waitUntil)ctx.waitUntil(delivery);else await delivery;}
+    return json({success:true,message:'若此電子郵件已註冊，您會收到重設密碼連結；請查看收件匣與垃圾郵件。若未收到，請稍後再試。'});
+  }
   if(path==='/api/member/register'&&method==='POST') {
     await rate(env,`register:${request.headers.get('CF-Connecting-IP')||'local'}`,8);
     const data=await body(request),p=profile(data),address=email(data.email),secret=password(data.password),stamp=new Date().toISOString();
     const m={id:crypto.randomUUID(),email:address,...p,created_at:stamp};
-    const result=await env.DB.prepare('INSERT OR IGNORE INTO members(id,email,password_hash,name,birthday,country,phone,address,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(m.id,address,await hashPassword(secret),p.name,p.birthday,p.country,p.phone,p.address,stamp,stamp).run();
+    m.password_hash=await hashPassword(secret);
+    const result=await env.DB.prepare('INSERT OR IGNORE INTO members(id,email,password_hash,name,birthday,country,phone,address,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(m.id,address,m.password_hash,p.name,p.birthday,p.country,p.phone,p.address,stamp,stamp).run();
     if(!result.meta.changes) fail(409,'無法使用這個電子郵件註冊；若已有帳號，請登入');
-    return issueSession(env,m,request);
+    let verificationSent=false;
+    if(mailAvailable(env,url)){try{await sendMemberEmail(env,m,'verify',url);verificationSent=true;}catch{console.error('Registration verification email delivery failed');}}
+    return issueSession(env,m,request,{verificationSent});
   }
   if(path==='/api/member/login'&&method==='POST') {
     await rate(env,`login-ip:${request.headers.get('CF-Connecting-IP')||'local'}`,30);
     const data=await body(request),address=email(data.email);
     if(typeof data.password!=='string'||data.password.length>128) fail(400,'請確認密碼');
     await rate(env,`login-email:${address}`,10);
-    const m=await env.DB.prepare('SELECT * FROM members WHERE email=?').bind(address).first();
+    const m=await env.DB.prepare('SELECT m.*,EXISTS(SELECT 1 FROM member_email_verified v WHERE v.member_id=m.id) AS email_verified FROM members m WHERE email=?').bind(address).first();
     const valid=await verifyPassword(data.password,m?.password_hash);
     if(!valid||!m?.active) fail(401,'電子郵件或密碼不正確');return issueSession(env,m,request);
   }
@@ -104,7 +164,7 @@ async function api(request,env,url) {
     const m=await session(request,env);await rate(env,`password:${m.id}`,8);
     const data=await body(request),secret=password(data.password);
     if(typeof data.currentPassword!=='string'||data.currentPassword.length>128||!await verifyPassword(data.currentPassword,m.password_hash))fail(400,'目前密碼不正確');
-    await env.DB.batch([env.DB.prepare('UPDATE members SET password_hash=?,updated_at=? WHERE id=?').bind(await hashPassword(secret),new Date().toISOString(),m.id),env.DB.prepare('DELETE FROM member_sessions WHERE member_id=?').bind(m.id)]);
+    await env.DB.batch([env.DB.prepare('UPDATE members SET password_hash=?,updated_at=? WHERE id=?').bind(await hashPassword(secret),new Date().toISOString(),m.id),env.DB.prepare('DELETE FROM member_sessions WHERE member_id=?').bind(m.id),env.DB.prepare('DELETE FROM member_email_tokens WHERE member_id=?').bind(m.id)]);
     return json({success:true},200,{'Set-Cookie':cookie('',0)});
   }
   if((path==='/api/member/orders'||path.startsWith('/api/member/orders/'))&&method==='GET') {
@@ -144,11 +204,11 @@ async function api(request,env,url) {
   fail(404,'找不到此功能');
 }
 export default {
-  async fetch(request,env) {
+  async fetch(request,env,ctx) {
     const url=new URL(request.url);
     try{
       let response;
-      if(url.pathname.startsWith('/api/'))response=await api(request,env,url);
+      if(url.pathname.startsWith('/api/'))response=await api(request,env,url,ctx);
       else if(env.APP_ENV==='staging'&&url.pathname==='/robots.txt')response=new Response('User-agent: *\nDisallow: /\n',{headers:{'Content-Type':'text/plain; charset=utf-8'}});
       else if(/^\/checkout(?:\.html)?\/?$/.test(url.pathname)&&!await session(request,env,false))response=new Response(null,{status:303,headers:{Location:'/member.html?next=checkout','Cache-Control':'no-store'}});
       else{
