@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>會員中心｜WUGONG 吾鋼</title><link rel="stylesheet" href="member.css"><script type="module" src="member.js"></script></head>
+<body>
+<header><a class="brand" href="/">WUGONG <span>吾鋼</span></a><nav aria-label="主要導覽"><a href="/#shop">繼續選購</a><a href="/cart.html">購物車</a></nav></header>
+<main>
+<p class="eyebrow">YOUR WUGONG</p><h1>會員中心</h1>
+<p id="message" role="status" aria-live="polite">正在確認登入狀態…</p>
+<section id="auth" hidden>
+  <p id="checkoutNotice" class="notice" hidden>請先登入或註冊，再繼續結帳。購物車商品會保留。</p>
+  <div class="tabs" aria-label="會員登入與註冊"><button id="loginTab" type="button" aria-pressed="true">會員登入</button><button id="registerTab" type="button" aria-pressed="false">建立帳號</button></div>
+  <div class="auth-layout">
+    <div class="panel">
+      <form id="loginForm">
+        <h2>歡迎回來</h2>
+        <label>電子郵件<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
+        <label>密碼<input name="password" type="password" autocomplete="current-password" required maxlength="128"></label>
+        <button class="primary" type="submit">登入</button>
+      </form>
+      <form id="registerForm" hidden>
+        <h2>加入 WUGONG</h2>
+        <label>電子郵件<input name="email" type="email" autocomplete="username" required maxlength="254"></label>
+        <label>密碼<input name="password" type="password" autocomplete="new-password" required minlength="15" maxlength="128" aria-describedby="passwordHint"></label>
+        <p class="hint" id="passwordHint">15 至 128 個字元，可使用容易記住的長句。</p>
+        <label>再次輸入密碼<input name="confirmPassword" type="password" autocomplete="new-password" required minlength="15" maxlength="128"></label>
+        <label>姓名<input name="name" autocomplete="name" required maxlength="100"></label>
+        <div class="two"><label>生日<input name="birthday" type="date" autocomplete="bday" min="1900-01-01" required></label><label>國家／地區<select name="country" autocomplete="country" required></select></label></div>
+        <p class="hint">姓名、生日與國家儲存於會員資料；生日不公開，也不作為密碼找回的驗證方式。可於會員中心修改。</p>
+        <button class="primary" type="submit">註冊並登入</button>
+      </form>
+    </div>
+    <aside class="intro"><span class="rule"></span><h2>收藏每一次<br>書寫的相遇。</h2><p>登入後，可管理個人資料、查看購買紀錄，並繼續完成訂單。</p><p class="hint">會員國家／地區與實際收件國家分開填寫。可寄送地區與運費尚待設定。</p></aside>
+  </div>
+</section>
+<section id="account" hidden>
+  <div class="account-heading"><div><h2 id="welcome"></h2><p id="accountEmail" class="hint"></p></div><button type="button" id="logout">登出</button></div>
+  <a id="continueCheckout" class="primary link-button" href="/checkout.html" hidden>繼續結帳 →</a>
+  <div class="account-layout">
+    <section class="panel"><h2>個人資料</h2>
+      <form id="profileForm">
+        <label>姓名<input name="name" autocomplete="name" required maxlength="100"></label>
+        <div class="two"><label>生日<input name="birthday" type="date" autocomplete="bday" min="1900-01-01" required></label><label>國家／地區<select name="country" autocomplete="country" required></select></label></div>
+        <label>聯絡電話（選填）<input name="phone" type="tel" autocomplete="tel" maxlength="40"></label>
+        <label>常用收件地址（選填）<textarea name="address" autocomplete="street-address" maxlength="500" rows="3"></textarea></label>
+        <button class="primary" type="submit">儲存資料</button>
+      </form>
+      <details class="password-section"><summary>變更密碼</summary><form id="passwordForm"><label>目前密碼<input name="currentPassword" type="password" autocomplete="current-password" required maxlength="128"></label><label>新密碼<input name="password" type="password" autocomplete="new-password" required minlength="15" maxlength="128"></label><label>再次輸入新密碼<input name="confirmPassword" type="password" autocomplete="new-password" required minlength="15" maxlength="128"></label><p class="hint">變更後所有裝置會登出，請使用新密碼重新登入。</p><button type="submit">更新密碼</button></form></details>
+    </section>
+    <section class="panel orders"><div class="account-heading"><h2>購買紀錄</h2><button id="refreshOrders" type="button">重新整理</button></div><p class="hint">顯示登入此帳號後建立的訂單。過去未綁定會員的訂單不會自動歸戶。</p><div id="orders" aria-live="polite"></div><button id="moreOrders" type="button" hidden>載入更多</button></section>
+  </div>
+</section>
+</main><footer>WUGONG · Handcrafted Writing Instruments · Taiwan</footer>
+</body></html>

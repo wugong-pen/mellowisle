@@ -11,3 +11,9 @@ wrangler.toml
 *.sql
 *.test.mjs
 package*.json
+.build
+tests
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.gitignore
+MEMBERS.md

@@ -1,0 +1,46 @@
+import {countryOptions} from './countries.js';
+const $=id=>document.getElementById(id);
+const next=new URLSearchParams(location.search).get('next')==='checkout';
+let page=1,member=null;
+function message(value,error=false){$('message').textContent=value;$('message').classList.toggle('error',error);}
+async function api(path,method='GET',data){
+  const response=await fetch(path,{method,credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
+  const result=await response.json();
+  if(!response.ok){if(response.status===401&&member){member=null;showAuth();}throw new Error(result.error||'暫時無法完成，請稍後再試');}return result;
+}
+function tab(register){$('loginForm').hidden=register;$('registerForm').hidden=!register;$('loginTab').setAttribute('aria-pressed',String(!register));$('registerTab').setAttribute('aria-pressed',String(register));message('');}
+function showAuth(){member=null;$('auth').hidden=false;$('account').hidden=true;$('checkoutNotice').hidden=!next;$('orders').replaceChildren();$('profileForm').reset();$('passwordForm').reset();}
+async function showAccount(m){member=m;$('auth').hidden=true;$('account').hidden=false;$('welcome').textContent=`${m.name}，您好`;$('accountEmail').textContent=m.email;$('continueCheckout').hidden=!next;for(const key of ['name','birthday','country','phone','address'])$('profileForm').elements[key].value=m[key]||'';await loadOrders(true);}
+function data(form){return Object.fromEntries(new FormData(form));}
+function submit(form,action){form.addEventListener('submit',async event=>{event.preventDefault();const button=form.querySelector('button[type=submit]');button.disabled=true;message('處理中…');try{await action(data(form));}catch(error){message(error.message||'連線失敗，請稍後再試',true);}finally{button.disabled=false;}});}
+function confirmPassword(d){if(d.password!==d.confirmPassword)throw new Error('兩次輸入的密碼不一致');}
+for(const select of document.querySelectorAll('select[name=country]'))countryOptions(select);
+for(const input of document.querySelectorAll('input[type=date]'))input.max=new Date().toISOString().slice(0,10);
+$('loginTab').addEventListener('click',()=>tab(false));$('registerTab').addEventListener('click',()=>tab(true));
+for(const [id,path]of [['loginForm','login'],['registerForm','register']])submit($(id),async d=>{if(path==='register')confirmPassword(d);const result=await api(`/api/member/${path}`,'POST',d);$(id).reset();if(next){location.assign('/checkout.html');return;}message(path==='register'?'帳號已建立，歡迎加入 WUGONG。':'登入成功');await showAccount(result.member);});
+submit($('profileForm'),async d=>{const result=await api('/api/member','PATCH',d);member=result.member;$('welcome').textContent=`${member.name}，您好`;message('會員資料已儲存');});
+submit($('passwordForm'),async d=>{confirmPassword(d);await api('/api/member/password','POST',d);showAuth();tab(false);message('密碼已更新，請重新登入。');});
+$('logout').addEventListener('click',async()=>{try{await api('/api/member/logout','POST',{});showAuth();tab(false);message('已安全登出');}catch(e){message(e.message,true);}});
+const states={pending:'待確認',confirmed:'已確認',paid:'已付款',shipped:'已出貨',completed:'已完成',cancelled:'已取消'};
+const payments={bank:'銀行轉帳',card:'信用卡',linepay:'LINE Pay'};
+function node(tag,text,className){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;return el;}
+function orderCard(order){
+  const card=node('article','','order');card.append(node('h3',order.order_number),node('span',states[order.status]||'處理中','status'));
+  const date=new Date(order.created_at);card.append(node('p',Number.isFinite(date.getTime())?date.toLocaleString('zh-TW'):'','hint'));
+  let items=[];try{items=JSON.parse(order.items);}catch{}const list=document.createElement('ul');
+  for(const item of items)list.append(node('li',`${item.product}${item.nib?' · '+item.nib:''} × ${item.quantity}`));
+  card.append(list,node('p',`訂單金額 NT$${Number(order.total).toLocaleString('zh-TW')}`));
+  const details=document.createElement('details');details.append(node('summary','查看收件與訂單資料'));const dl=document.createElement('dl');
+  const region=new Intl.DisplayNames(['zh-Hant'],{type:'region'});
+  for(const [label,value]of [['收件人',order.customer_name],['電話',order.phone],['電子郵件',order.email],['收件國家',order.shipping_country==='TW'?'台灣':region.of(order.shipping_country)],['地址',order.address],['配送方式',order.shipping],['付款方式',payments[order.payment]||order.payment],['備註',order.note||'無']])dl.append(node('dt',label),node('dd',value));
+  details.append(dl);card.append(details);return card;
+}
+async function loadOrders(reset=false){
+  const button=$('moreOrders');button.disabled=true;$('refreshOrders').disabled=true;
+  try{if(reset)page=1;const result=await api(`/api/member/orders?page=${page}`);if(reset)$('orders').replaceChildren();for(const order of result.orders)$('orders').append(orderCard(order));if(page===1&&!result.orders.length)$('orders').append(node('p','目前還沒有購買紀錄。登入後建立的訂單會顯示於此。','empty'));button.hidden=!result.hasMore;page++;}
+  catch(e){message(e.message,true);}finally{button.disabled=false;$('refreshOrders').disabled=false;}
+}
+$('moreOrders').addEventListener('click',()=>loadOrders());$('refreshOrders').addEventListener('click',()=>loadOrders(true));
+async function initialize(){try{const result=await api('/api/member');message('');if(result.member)await showAccount(result.member);else showAuth();}catch(e){message('無法載入會員資料，請重新整理後再試。',true);}}
+window.addEventListener('pageshow',e=>{if(e.persisted)initialize();});
+initialize();

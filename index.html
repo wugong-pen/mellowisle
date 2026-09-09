@@ -664,7 +664,7 @@ footer strong{
     padding:12px 5%;
   }
 
-  nav a:not(.cart-link){
+  nav a:not(.cart-link):not(.member-link){
     display:none;
   }
 
@@ -720,6 +720,7 @@ footer strong{
   </div>
 
   <nav>
+    <a class="member-link" href="/member.html">會員中心</a>
     <a href="#home">首頁</a>
     <a href="#collections">作品系列</a>
     <a href="#shop">線上商店</a>
@@ -1118,12 +1119,7 @@ function closeCart() {
 }
 
 
-function checkoutNotice() {
-
-  alert(
-    "購物車功能已完成。下一階段會加入正式結帳與付款系統。"
-  );
-}
+function checkoutNotice() { window.location.href = '/checkout.html'; }
 
 
 renderCart();
