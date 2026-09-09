@@ -159,6 +159,6 @@ export default {
       if(/^\/(member|checkout)(\.html)?\/?$/.test(url.pathname))result.headers.set('Cache-Control','no-store');
       if(/^\/member(\.html)?\/?$/.test(url.pathname))result.headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
       return result;
-    }catch(error){return json({success:false,error:error instanceof HttpError?error.message:'服務暫時無法使用，請稍後再試'},error.status||500,env.APP_ENV==='staging'?{'X-Robots-Tag':'noindex, nofollow, noarchive'}:{});}
+    }catch(error){if(!(error instanceof HttpError)) console.error("Member request failed", error.name, error.message); return json({success:false,error:error instanceof HttpError?error.message:'服務暫時無法使用，請稍後再試'},error.status||500,env.APP_ENV==='staging'?{'X-Robots-Tag':'noindex, nofollow, noarchive'}:{});}
   }
 };
