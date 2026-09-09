@@ -2,7 +2,7 @@
 
 ## 本次功能
 - 電子郵件與密碼註冊／登入／登出，姓名、生日、ISO 國家選擇，電話與地址可選填並修改。
-- PBKDF2-SHA256 600,000 rounds + random salt；伺服器 session 使用隨機 token、資料庫僅保存 token hash，Secure / HttpOnly / SameSite Cookie，7 天到期。
+- scrypt (N=16384, r=8, p=5) + random salt；伺服器 session 使用隨機 token、資料庫僅保存 token hash，Secure / HttpOnly / SameSite Cookie，7 天到期。
 - 登出撤銷 session，改密碼撤銷所有 session。資料庫 active=0 可停用會員，但管理 UI 尚未實作。
 - 寫入檢查同源 Origin、限制 JSON 請求大小；註冊、登入、改密碼、送單有持久化限流。
 - 結帳頁與送單 API 都必須登入；訂單 email、會員 ID、編號及建立時間由伺服器決定。

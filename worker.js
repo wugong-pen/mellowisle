@@ -1,4 +1,4 @@
-import { pbkdf2, timingSafeEqual } from 'node:crypto';
+import { scrypt, timingSafeEqual } from 'node:crypto';
 import { COUNTRY_CODES } from './countries.js';
 const COOKIE = '__Host-wugong_session', TTL = 604800;
 const now = () => Math.floor(Date.now()/1000);
@@ -31,12 +31,14 @@ function profile(data) {
   return {name,birthday,country:data.country,phone:text(data.phone??'',40,'電話',false),address:text(data.address??'',500,'地址',false)};
 }
 async function hashPassword(value,salt=random()) {
-  const hash=await new Promise((resolve,reject)=>pbkdf2(value,salt,600000,32,'sha256',(error,key)=>error?reject(error):resolve(key)));
-  return `pbkdf2-sha256$600000$${salt}$${hex(hash)}`;
+  // OWASP scrypt profile using 16 MiB, supported by native Workers crypto.
+  const hash=await new Promise((resolve,reject)=>scrypt(value,salt,32,{N:16384,r:8,p:5,maxmem:33554432},(error,key)=>error?reject(error):resolve(key)));
+  return `scrypt$16384$8$5$${salt}$${hex(hash)}`;
 }
 async function verifyPassword(value,stored) {
-  const expected=stored||`pbkdf2-sha256$600000$${'0'.repeat(64)}$${'0'.repeat(64)}`;
-  const actual=await hashPassword(value,expected.split('$')[2]);
+  const expected=stored||`scrypt$16384$8$5$${'0'.repeat(64)}$${'0'.repeat(64)}`;
+  if(!/^scrypt\$16384\$8\$5\$[a-f0-9]{64}\$[a-f0-9]{64}$/.test(expected))return false;
+  const actual=await hashPassword(value,expected.split('$')[4]);
   const a=new TextEncoder().encode(actual),b=new TextEncoder().encode(expected);
   return a.length===b.length&&timingSafeEqual(a,b);
 }
