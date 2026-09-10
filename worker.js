@@ -1,3 +1,4 @@
+import {quote,paymentForm,notify,sandbox} from './ecpay.js';
 import { scrypt, timingSafeEqual } from 'node:crypto';
 import { COUNTRY_CODES } from './countries.js';
 const COOKIE = '__Host-wugong_session', TTL = 604800;
@@ -113,6 +114,7 @@ async function consumeEmailToken(request,env,purpose) {
 }
 async function api(request,env,url,ctx) {
   const path=url.pathname,method=request.method;
+  if(path==='/api/payments/ecpay/notify')return notify(request,env);
   if(!['GET','HEAD'].includes(method)&&(request.headers.get('Origin')!==url.origin||request.headers.get('Sec-Fetch-Site')==='cross-site')) fail(403,'請從本站頁面操作');
   // Legacy unauthenticated admin access stays closed until admin provisioning exists.
   if(path==='/api/orders'||path==='/api/order/status') fail(403,'此功能僅限管理員，管理員登入功能尚未開放');
@@ -178,6 +180,12 @@ async function api(request,env,url,ctx) {
     const result=await env.DB.prepare(base+' ORDER BY o.id DESC LIMIT 21 OFFSET ?').bind(m.id,(page-1)*20).all();
     return json({success:true,orders:result.results.slice(0,20),hasMore:result.results.length>20});
   }
+  if(path==='/api/checkout/quote'&&method==='POST'){await session(request,env);sandbox(env);return json({success:true,...quote((await body(request)).items)});}
+  if(path==='/api/payments/ecpay/start'&&method==='POST'){
+    const m=await session(request,env);sandbox(env);const data=await body(request);
+    const order=await env.DB.prepare('SELECT o.* FROM orders o JOIN member_orders mo ON mo.order_number=o.order_number WHERE o.order_number=? AND mo.member_id=?').bind(text(data.orderNumber,60,'訂單編號'),m.id).first();
+    if(!order)fail(404,'找不到此訂單');return json({success:true,...paymentForm(order,env)});
+  }
   if(path==='/api/order'&&method==='POST') {
     const m=await session(request,env);await rate(env,`orders:${m.id}`,30);
     const order=await body(request),c=order.customer||{},key=request.headers.get('Idempotency-Key');
@@ -186,15 +194,12 @@ async function api(request,env,url,ctx) {
     if(previous)return json({success:true,orderNumber:previous.order_number});
     const name=text(c.name,100,'收件人姓名'),phone=text(c.phone,40,'電話'),address=text(c.address,500,'收件地址');
     if(!COUNTRY_CODES.includes(c.country))fail(400,'請選擇收件國家／地區');
-    if(!Array.isArray(order.items)||!order.items.length||order.items.length>50)fail(400,'請確認購物車商品');
-    const items=order.items.map(item=>{
-      if(!Number.isInteger(item.quantity)||item.quantity<1||item.quantity>99||!Number.isSafeInteger(item.price)||item.price<0||item.price>10000000)fail(400,'請確認商品數量與金額');
-      return {id:text(item.id,150,'商品編號'),product:text(item.product,150,'商品名稱'),nib:text(item.nib??'',100,'規格',false),price:item.price,quantity:item.quantity};
-    });
-    // Catalog pricing, stock and payment verification remain a separate release.
-    if(env.APP_ENV!=='staging')fail(503,'正式結帳尚未開放');
-    const total=items.reduce((sum,item)=>sum+item.price*item.quantity,0),number=`WG${Date.now()}-${random().slice(0,12)}`;
+    sandbox(env);
+    const {items,total}=quote(order.items),number='WG'+random().slice(0,18);
     const shipping=text(order.shipping??'',40,'配送方式',false),payment=text(order.payment,30,'付款方式'),note=text(order.note??'',1000,'備註',false);
+    if(payment!=='ecpay')fail(400,'目前僅開放綠界信用卡測試');
+    if(c.country!=='TW')fail(400,'綠界測試限台灣收件；海外 PayPal 尚未開放');
+    if(order.expectedTotal!==total)fail(409,'商品金額已更新，請重新整理後確認');
     try{await env.DB.batch([
       env.DB.prepare('INSERT INTO orders(order_number,customer_name,phone,email,address,shipping,payment,note,items,total,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').bind(number,name,phone,m.email,address,shipping,payment,note,JSON.stringify(items),total,'pending',new Date().toISOString()),
       env.DB.prepare('INSERT INTO member_orders(order_number,member_id,shipping_country,request_key) VALUES (?,?,?,?)').bind(number,m.id,c.country,key)
@@ -221,6 +226,6 @@ export default {
       if(/^\/(member|checkout)(\.html)?\/?$/.test(url.pathname))result.headers.set('Cache-Control','no-store');
       if(/^\/member(\.html)?\/?$/.test(url.pathname))result.headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
       return result;
-    }catch(error){if(!(error instanceof HttpError)) console.error("Member request failed", error.name, error.message); return json({success:false,error:error instanceof HttpError?error.message:'服務暫時無法使用，請稍後再試'},error.status||500,env.APP_ENV==='staging'?{'X-Robots-Tag':'noindex, nofollow, noarchive'}:{});}
+    }catch(error){if(!(error instanceof HttpError)) console.error("Member request failed", error.name, error.message); return json({success:false,error:error instanceof HttpError||[400,409,503].includes(error.status)?error.message:'服務暫時無法使用，請稍後再試'},error.status||500,env.APP_ENV==='staging'?{'X-Robots-Tag':'noindex, nofollow, noarchive'}:{});}
   }
 };

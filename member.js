@@ -31,8 +31,8 @@ submit($('resetPasswordForm'),async d=>{confirmPassword(d);await api('/api/membe
 submit($('profileForm'),async d=>{const result=await api('/api/member','PATCH',d);member=result.member;$('welcome').textContent=`${member.name}，您好`;message('會員資料已儲存');});
 submit($('passwordForm'),async d=>{confirmPassword(d);await api('/api/member/password','POST',d);showAuth();tab(false);message('密碼已更新，請重新登入。');});
 $('logout').addEventListener('click',async()=>{try{await api('/api/member/logout','POST',{});showAuth();tab(false);message('已安全登出');}catch(e){message(e.message,true);}});
-const states={pending:'待確認',confirmed:'已確認',paid:'已付款',shipped:'已出貨',completed:'已完成',cancelled:'已取消'};
-const payments={bank:'銀行轉帳',card:'信用卡',linepay:'LINE Pay'};
+const states={test_paid:'測試付款成功（未實際收款）',payment_failed:'測試付款失敗',pending:'待確認',confirmed:'已確認',paid:'已付款',shipped:'已出貨',completed:'已完成',cancelled:'已取消'};
+const payments={ecpay:'綠界信用卡（測試）',bank:'銀行轉帳',card:'信用卡',linepay:'LINE Pay'};
 function node(tag,text,className){const el=document.createElement(tag);el.textContent=text;if(className)el.className=className;return el;}
 function orderCard(order){
   const card=node('article','','order');card.append(node('h3',order.order_number),node('span',states[order.status]||'處理中','status'));
@@ -43,7 +43,9 @@ function orderCard(order){
   const details=document.createElement('details');details.append(node('summary','查看收件與訂單資料'));const dl=document.createElement('dl');
   const region=new Intl.DisplayNames(['zh-Hant'],{type:'region'});
   for(const [label,value]of [['收件人',order.customer_name],['電話',order.phone],['電子郵件',order.email],['收件國家',order.shipping_country==='TW'?'台灣':region.of(order.shipping_country)],['地址',order.address],['配送方式',order.shipping],['付款方式',payments[order.payment]||order.payment],['備註',order.note||'無']])dl.append(node('dt',label),node('dd',value));
-  details.append(dl);card.append(details);return card;
+  details.append(dl);card.append(details);
+  if(order.payment==='ecpay'&&order.status==='pending')card.append(node('p','若已完成測試付款，請稍後按「重新整理」查看通知結果；尚未完成的訂單不會出貨。','hint'));
+  return card;
 }
 async function loadOrders(reset=false){
   const button=$('moreOrders');button.disabled=true;$('refreshOrders').disabled=true;

@@ -254,7 +254,7 @@
         <h2>配送資料</h2>
 
         <div class="field">
-          <label for="country">收件國家／地區 *</label><select id="country" required></select><p style="font-size:14px;color:#bbb">測試訂單不代表可寄送；海外運費與寄送限制尚待設定。</p></div><div class="field"><label for="shipping">配送方式 *</label>
+          <label for="country">收件國家／地區 *</label><select id="country" required></select><p style="font-size:14px;color:#bbb">目前僅開放台灣收件的綠界測試。測試運費為 NT$0，正式運費另行設定。</p></div><div class="field"><label for="shipping">配送方式 *</label>
           <select id="shipping">
             <option value="宅配">宅配</option>
             <option value="超商取貨">超商取貨</option>
@@ -276,18 +276,18 @@
         <h2>付款方式</h2>
 
         <label class="radio-box">
-          <input type="radio" name="payment" value="bank" checked>
-          銀行轉帳
+          <input type="radio" name="payment" value="bank" disabled>
+          銀行轉帳（尚未開放）
         </label>
 
         <label class="radio-box">
-          <input type="radio" name="payment" value="card">
-          信用卡付款
+          <input type="radio" name="payment" value="ecpay" checked>
+          綠界信用卡（測試付款）
         </label>
 
         <label class="radio-box">
-          <input type="radio" name="payment" value="linepay">
-          LINE Pay
+          <input type="radio" name="payment" value="linepay" disabled>
+          LINE Pay（尚未開放）
         </label>
       </section>
 
@@ -314,8 +314,8 @@
       </button>
 
       <div class="notice">
-        此頁目前為訂單資料確認流程。<br>
-        正式信用卡、LINE Pay 等金流會於下一階段串接。
+        將前往綠界測試付款頁，請僅使用測試卡。<br>
+        測試運費 NT$0，不會出貨；正式收款尚未開放。
       </div>
 
     </aside>
