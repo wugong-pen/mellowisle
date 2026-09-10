@@ -708,9 +708,11 @@ footer strong{
   }
 }
 </style>
+<link rel="stylesheet" href="/responsive.css">
+<script src="/navigation.js" defer></script>
 </head>
 
-<body>
+<body class="home-page">
 
 <header>
 
@@ -719,7 +721,8 @@ footer strong{
     <div class="brand-name">WUGONG</div>
   </div>
 
-  <nav>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">選單</button>
+  <nav id="site-nav" aria-label="主要導覽">
     <a class="member-link" href="/member.html">會員中心</a>
     <a href="#home">首頁</a>
     <a href="#collections">作品系列</a>
@@ -727,7 +730,7 @@ footer strong{
     <a href="#craft">工藝</a>
     <a href="#about">品牌故事</a>
 
-    <a class="cart-link" onclick="openCart()">
+    <a class="cart-link" href="/cart.html" onclick="event.preventDefault();openCart()">
       購物車
       <span class="cart-count" id="cartCount">0</span>
     </a>

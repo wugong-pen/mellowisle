@@ -158,6 +158,8 @@
       }
     }
   </style>
+<link rel="stylesheet" href="/responsive.css">
+<script src="/product-cart.js" defer></script>
 </head>
 
 <body>
@@ -231,7 +233,7 @@
       筆尖規格
     </div>
 
-    <select>
+    <select aria-label="筆尖規格">
       <option>WUGONG 筆尖</option>
     </select>
 
@@ -247,9 +249,11 @@
       <button onclick="changeQty(1)">＋</button>
     </div>
 
-    <button class="cart-button">
+    <button class="cart-button" type="button">
       加入購物車
     </button>
+    <p id="cartFeedback" class="cart-feedback" role="status" aria-live="polite"></p>
+    <a class="view-cart-link" href="/cart.html">查看購物車 →</a>
 
   </div>
 

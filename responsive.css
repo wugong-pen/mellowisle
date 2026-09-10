@@ -1,0 +1,61 @@
+/* Shared layouts for the public storefront, from small phones to desktop. */
+html{ -webkit-text-size-adjust:100%; }
+img,video{max-width:100%}
+header{gap:16px}
+header a{display:inline-flex;align-items:center;min-height:44px}
+button,input,select,textarea{font:inherit}
+input,select,textarea{max-width:100%;min-width:0;font-size:16px}
+button,select,.btn,.cart-button,.add-cart{min-height:44px}
+button,a,input,select,textarea,summary{touch-action:manipulation}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid #d7b36a;outline-offset:4px}
+.product>*,.checkout-layout>*,.auth-layout>*,.account-layout>*,.cart-item>*,.order-item>*{min-width:0}
+.product-info,.item-name,.order-name,#accountEmail,#welcome{overflow-wrap:anywhere}
+.qty-row button,.quantity button{min-width:44px;min-height:44px}
+.qty-row,.quantity{flex-wrap:wrap}
+.menu-toggle{display:none}
+.cart-feedback{color:#e5c68f;line-height:1.7;overflow-wrap:anywhere}
+.cart-feedback:not(:empty){padding:16px;border-left:3px solid #c2a56e;background:#242016;margin:18px 0}
+.view-cart-link{display:inline-flex;align-items:center;min-height:44px;color:#d6b16f}
+.product>section[style]{grid-column:1/-1}
+.home-page header{position:sticky}
+.home-page .hero{min-height:calc(100svh - 90px)}
+.home-page .cart-drawer{height:100dvh;max-height:100dvh}
+.home-page .cart-drawer:not(.open){display:none}
+.home-page .cart-body{min-height:0}
+@media(max-width:1100px){
+  .home-page header{padding:12px 5%;flex-wrap:wrap;gap:8px 16px}
+  .home-page .brand img{width:44px;height:44px}
+  .home-page .brand-name{font-size:18px}
+  .home-page .menu-toggle{display:block;margin-left:auto;padding:8px 16px;background:transparent;border:1px solid #a58b5a;color:#eee;font-size:16px;cursor:pointer}
+  .home-page #site-nav{display:none;width:100%;gap:4px 16px;flex-wrap:wrap;max-height:60dvh;overflow:auto;padding:8px 0}
+  .home-page #site-nav.is-open{display:flex}
+  .home-page #site-nav a{display:inline-flex;min-height:44px;padding:4px 8px}
+  .home-page .hero{padding-top:70px}
+}
+@media(max-width:850px){
+  body:not(.home-page) header{height:auto;min-height:70px;flex-wrap:wrap;padding:16px 5%;gap:8px 16px}
+  body:not(.home-page) header nav{display:flex;flex-wrap:wrap;gap:8px 16px}
+  body:not(.home-page) header nav a{margin-left:0}
+  .checkout-layout{grid-template-columns:minmax(0,1fr);gap:28px}
+  .product{grid-template-columns:minmax(0,1fr)}
+  .order-box{position:static}
+}
+@media(max-width:600px){
+  .home-page .hero h1{font-size:clamp(36px,10vw,58px);letter-spacing:4px}
+  .home-page .hero p{font-size:16px}
+  .container{padding:30px 16px 50px}
+  .two-col{grid-template-columns:minmax(0,1fr)}
+  .order-box{padding:16px}
+  .order-item{grid-template-columns:56px minmax(0,1fr);gap:12px}
+  .order-item img{width:56px;height:56px}
+  .order-item> :last-child{grid-column:2;justify-self:start}
+  .cart-item{grid-template-columns:72px minmax(0,1fr);gap:14px}
+  .cart-item img{width:72px;height:72px}
+  .item-name{font-size:17px}
+  .item-subtotal{grid-column:2;white-space:normal}
+  .summary-row{gap:12px;flex-wrap:wrap}
+  .remove-btn{min-height:44px}
+  .product-info h1{font-size:26px}
+  .home-page .cart-drawer{padding:20px 16px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}

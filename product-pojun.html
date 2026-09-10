@@ -269,6 +269,7 @@ nav a:hover{
 }
 
 </style>
+<link rel="stylesheet" href="/responsive.css">
 </head>
 
 <body>
@@ -427,6 +428,7 @@ NT$25,000
   >
     加入購物車
   </button>
+<p id="cartFeedback" class="cart-feedback" role="status" aria-live="polite"></p>
 
   <button
     class="add-cart"
@@ -456,6 +458,7 @@ NT$25,000
 </a>
 
 </div>
+
 
 </main>
 
@@ -551,7 +554,7 @@ function addToCart(){
         JSON.stringify(cart)
     );
 
-    alert("已加入購物車");
+    document.getElementById("cartFeedback").textContent = "已加入購物車，可繼續選購或查看購物車。";
 }
 
 </script>

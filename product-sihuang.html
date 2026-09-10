@@ -269,6 +269,7 @@ nav a:hover{
 }
 
 </style>
+<link rel="stylesheet" href="/responsive.css">
 </head>
 
 <body>
@@ -413,6 +414,7 @@ WUGONG 手工鋼筆作品。以深色筆身搭配黃銅細節，
 <button class="add-cart" onclick="addToCart()">
 加入購物車
 </button>
+<p id="cartFeedback" class="cart-feedback" role="status" aria-live="polite"></p>
 
 
 <div class="details">
@@ -433,6 +435,7 @@ WUGONG 手工鋼筆作品。以深色筆身搭配黃銅細節，
 </a>
 
 </div>
+
 
 </main>
 
@@ -528,7 +531,7 @@ function addToCart(){
         JSON.stringify(cart)
     );
 
-    alert("已加入購物車");
+    document.getElementById("cartFeedback").textContent = "已加入購物車，可繼續選購或查看購物車。";
 }
 
 </script>
