@@ -7,7 +7,7 @@ import {checkMac} from './ecpay.js';
 const require=createRequire(import.meta.url);
 const {Miniflare,convertV4MiniflareOptions}=require(require.resolve('miniflare',{paths:[require.resolve('wrangler')]}));
 test('Cloudflare runtime supports password hashing and D1 membership',async()=>{
- const mf=new Miniflare(convertV4MiniflareOptions({modules:[{type:'ESModule',path:fileURLToPath(new URL('./worker.js',import.meta.url)),contents:readFileSync(new URL('./worker.js',import.meta.url),'utf8')},{type:'ESModule',path:fileURLToPath(new URL('./countries.js',import.meta.url)),contents:readFileSync(new URL('./countries.js',import.meta.url),'utf8')},{type:'ESModule',path:fileURLToPath(new URL('./ecpay.js',import.meta.url)),contents:readFileSync(new URL('./ecpay.js',import.meta.url),'utf8')}],compatibilityDate:'2026-09-07',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],bindings:{APP_ENV:'staging'}}));
+ const mf=new Miniflare(convertV4MiniflareOptions({modules:[{type:'ESModule',path:fileURLToPath(new URL('./worker.js',import.meta.url)),contents:readFileSync(new URL('./worker.js',import.meta.url),'utf8')},{type:'ESModule',path:fileURLToPath(new URL('./countries.js',import.meta.url)),contents:readFileSync(new URL('./countries.js',import.meta.url),'utf8')},{type:'ESModule',path:fileURLToPath(new URL('./ecpay.js',import.meta.url)),contents:readFileSync(new URL('./ecpay.js',import.meta.url),'utf8')},{type:'ESModule',path:fileURLToPath(new URL('./payments.js',import.meta.url)),contents:readFileSync(new URL('./payments.js',import.meta.url),'utf8')}],compatibilityDate:'2026-09-07',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],bindings:{APP_ENV:'staging',PAYMENT_ORIGIN:'https://wugong-test.wugong-pen.workers.dev',BANK_TEST_CONFIG:JSON.stringify({bank:'測試銀行',code:'TEST',branch:'測試分行',holder:'測試戶名',account:'TEST-NOT-A-REAL-ACCOUNT',days:3})}}));
  try{
   const db=await mf.getD1Database('DB');
   const schema=readFileSync(new URL('./schema-members.sql',import.meta.url),'utf8').replace(/^--.*$/gm,'');
@@ -17,12 +17,23 @@ test('Cloudflare runtime supports password hashing and D1 membership',async()=>{
   const cookie=response.headers.get('set-cookie').split(';')[0];
   const me=await mf.dispatchFetch('https://shop.test/api/member',{headers:{Cookie:cookie}});assert.equal((await me.json()).member.email,'runtime@example.test');
   await db.prepare('CREATE TABLE orders(order_number TEXT PRIMARY KEY,customer_name TEXT,phone TEXT,email TEXT,address TEXT,shipping TEXT,payment TEXT,note TEXT,items TEXT,total INTEGER,status TEXT,created_at TEXT)').run();
+  for(const statement of readFileSync(new URL('./schema-payments.sql',import.meta.url),'utf8').split(';').filter(s=>s.trim()))await db.prepare(statement).run();
   const payload={customer:{name:'測試',phone:'0000000000',address:'測試地址',country:'TW'},items:[{id:'pojun-單尖',nib:'單尖',price:1,quantity:1}],expectedTotal:25000,payment:'ecpay',shipping:'宅配'};
   const orderResponse=await mf.dispatchFetch('https://shop.test/api/order',{method:'POST',headers:{Origin:'https://shop.test','Content-Type':'application/json',Cookie:cookie,'Idempotency-Key':'runtime-payment-0001'},body:JSON.stringify(payload)});
   const order=await orderResponse.json();assert.equal(orderResponse.status,200,JSON.stringify(order));
   const params={MerchantID:'3002607',MerchantTradeNo:order.orderNumber,TradeAmt:'25000',RtnCode:'1',SimulatePaid:'0',TradeNo:'runtime123',PaymentType:'Credit_CreditCard'};
   const notice=await mf.dispatchFetch('https://shop.test/api/payments/ecpay/notify',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({...params,CheckMacValue:checkMac(params)}).toString()});
   assert.equal(await notice.text(),'1|OK');assert.equal((await db.prepare('SELECT status FROM orders WHERE order_number=?').bind(order.orderNumber).first()).status,'test_paid');
+  const headers={Origin:'https://shop.test','Content-Type':'application/json',Cookie:cookie,'Idempotency-Key':'runtime-bank-00001'};
+  const bankOrder=await (await mf.dispatchFetch('https://shop.test/api/order',{method:'POST',headers,body:JSON.stringify({...payload,payment:'bank'})})).json();assert.equal(bankOrder.success,true);
+  const post=async(path,data,h=headers)=>{const r=await mf.dispatchFetch('https://shop.test'+path,{method:'POST',headers:h,body:JSON.stringify(data)});return {status:r.status,...await r.json()};};
+  const bank=await post('/api/payments/start',{orderNumber:bankOrder.orderNumber});assert.equal(bank.success,true);assert.equal(bank.bank.days,3);
+  assert.equal((await post('/api/payments/start',{orderNumber:bankOrder.orderNumber})).dueAt,bank.dueAt);
+  const report=await post('/api/payments/bank/report',{orderNumber:bankOrder.orderNumber,last5:'12345',date:new Date(Date.now()+8*3600000).toISOString().slice(0,10)});assert.equal(report.success,true,JSON.stringify(report));
+  assert.equal((await db.prepare('SELECT status FROM orders WHERE order_number=?').bind(bankOrder.orderNumber).first()).status,'pending');
+  assert.equal((await post('/api/payments/start',{orderNumber:bankOrder.orderNumber},{Origin:'https://shop.test','Content-Type':'application/json'})).status,401);
+  await db.prepare("UPDATE payment_attempts SET due_at='2000-01-01T00:00:00.000Z' WHERE order_number=?").bind(bankOrder.orderNumber).run();
+  assert.equal((await post('/api/payments/bank/report',{orderNumber:bankOrder.orderNumber,last5:'12345',date:new Date(Date.now()+8*3600000).toISOString().slice(0,10)})).status,409);
  }finally{await mf.dispose();}
 });
 

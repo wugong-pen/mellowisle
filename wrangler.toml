@@ -11,6 +11,7 @@ run_worker_first = true
 
 [vars]
 APP_ENV = "staging"
+BANK_TEST_CONFIG = '{"bank":"測試銀行（請勿匯款）","code":"TEST","branch":"測試分行","holder":"測試戶名","account":"TEST-NOT-A-REAL-ACCOUNT","days":3}'
 PAYMENT_ORIGIN = "https://wugong-test.wugong-pen.workers.dev"
 MAIL_FROM = "WUGONG <noreply@mail.wugong-pen.com>"
 MAIL_ORIGIN = "https://wugong-test.wugong-pen.workers.dev"

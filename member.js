@@ -44,6 +44,9 @@ function orderCard(order){
   const region=new Intl.DisplayNames(['zh-Hant'],{type:'region'});
   for(const [label,value]of [['收件人',order.customer_name],['電話',order.phone],['電子郵件',order.email],['收件國家',order.shipping_country==='TW'?'台灣':region.of(order.shipping_country)],['地址',order.address],['配送方式',order.shipping],['付款方式',payments[order.payment]||order.payment],['備註',order.note||'無']])dl.append(node('dt',label),node('dd',value));
   details.append(dl);card.append(details);
+  if(['bank','linepay','paypal'].includes(order.payment)&&order.status==='pending'){
+   const link=node('a',order.payment==='bank'?'查看匯款資料／回報':'繼續測試付款');link.href='/payment-return.html?'+new URLSearchParams({order:order.order_number,provider:order.payment});card.append(link);
+  }
   if(order.payment==='ecpay'&&order.status==='pending')card.append(node('p','若已完成測試付款，請稍後按「重新整理」查看通知結果；尚未完成的訂單不會出貨。','hint'));
   return card;
 }

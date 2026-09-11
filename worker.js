@@ -1,3 +1,4 @@
+import {methods,start,confirm} from './payments.js';
 import {quote,paymentForm,notify,sandbox} from './ecpay.js';
 import { scrypt, timingSafeEqual } from 'node:crypto';
 import { COUNTRY_CODES } from './countries.js';
@@ -180,6 +181,21 @@ async function api(request,env,url,ctx) {
     const result=await env.DB.prepare(base+' ORDER BY o.id DESC LIMIT 21 OFFSET ?').bind(m.id,(page-1)*20).all();
     return json({success:true,orders:result.results.slice(0,20),hasMore:result.results.length>20});
   }
+  if(path==='/api/payments/methods'&&method==='GET'){await session(request,env);return json({success:true,methods:methods(env,url.searchParams.get('country'))});}
+  if(['/api/payments/start','/api/payments/confirm','/api/payments/bank/report'].includes(path)&&method==='POST'){
+    const m=await session(request,env);sandbox(env);await rate(env,'payments:'+m.id,40);const data=await body(request);
+    const order=await env.DB.prepare('SELECT o.*,mo.shipping_country FROM orders o JOIN member_orders mo ON mo.order_number=o.order_number WHERE o.order_number=? AND mo.member_id=?').bind(text(data.orderNumber,60,'訂單編號'),m.id).first();
+    if(!order)fail(404,'找不到此訂單');
+    if(path==='/api/payments/start')return json({success:true,...await start(order,env)});
+    if(path==='/api/payments/confirm'){await confirm(order,env,data);return json({success:true});}
+    if(order.payment!=='bank'||order.status!=='pending')fail(409,'此訂單無法回報匯款');
+    if(!/^\d{5}$/.test(data.last5||'')||!/^\d{4}-\d{2}-\d{2}$/.test(data.date||''))fail(400,'請輸入匯款帳號末五碼與日期');
+    const stamp=Date.parse(data.date+'T00:00:00+08:00');
+    if(!Number.isFinite(stamp)||data.date>new Date(Date.now()+8*3600000).toISOString().slice(0,10)||data.date<new Date(Date.parse(order.created_at)+8*3600000).toISOString().slice(0,10))fail(400,'請確認匯款日期');
+    const result=await env.DB.prepare("UPDATE payment_attempts SET remittance_last5=?,remittance_date=?,reported_at=? WHERE order_number=? AND provider='bank' AND due_at>?").bind(data.last5,data.date,new Date().toISOString(),order.order_number,new Date().toISOString()).run();
+    if(!result.meta.changes)fail(409,'匯款期限已過或尚未取得匯款資料');
+    return json({success:true,message:'已收到回報，待人工核對；回報不代表付款完成'});
+  }
   if(path==='/api/checkout/quote'&&method==='POST'){await session(request,env);sandbox(env);return json({success:true,...quote((await body(request)).items)});}
   if(path==='/api/payments/ecpay/start'&&method==='POST'){
     const m=await session(request,env);sandbox(env);const data=await body(request);
@@ -197,8 +213,7 @@ async function api(request,env,url,ctx) {
     sandbox(env);
     const {items,total}=quote(order.items),number='WG'+random().slice(0,18);
     const shipping=text(order.shipping??'',40,'配送方式',false),payment=text(order.payment,30,'付款方式'),note=text(order.note??'',1000,'備註',false);
-    if(payment!=='ecpay')fail(400,'目前僅開放綠界信用卡測試');
-    if(c.country!=='TW')fail(400,'綠界測試限台灣收件；海外 PayPal 尚未開放');
+    if(methods(env,c.country)[payment]!==true)fail(400,'此付款方式尚未設定或不適用收件國家');
     if(order.expectedTotal!==total)fail(409,'商品金額已更新，請重新整理後確認');
     try{await env.DB.batch([
       env.DB.prepare('INSERT INTO orders(order_number,customer_name,phone,email,address,shipping,payment,note,items,total,status,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').bind(number,name,phone,m.email,address,shipping,payment,note,JSON.stringify(items),total,'pending',new Date().toISOString()),
