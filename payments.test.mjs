@@ -18,6 +18,12 @@ test('PayPal paid requires completed capture, order, and TWD amount',()=>{
  assert.equal(paypalPaid(result,order,'P1'),true);
  for(const mutate of [r=>r.status='APPROVED',r=>r.purchase_units[0].custom_id='other',r=>r.purchase_units[0].payments.captures[0].amount.currency_code='USD',r=>r.purchase_units[0].payments.captures[0].amount.value='1',r=>r.purchase_units[0].payments.captures[0].status='PENDING']){const r=structuredClone(result);mutate(r);assert.equal(paypalPaid(r,order,'P1'),false);}
 });
+test('PayPal capture response carries custom_id on capture; conflicting or missing IDs fail',()=>{
+ const order={order_number:'WG1',total:25000},result={id:'P1',status:'COMPLETED',purchase_units:[{reference_id:'WG1',payments:{captures:[{custom_id:'WG1',status:'COMPLETED',amount:{currency_code:'TWD',value:'25000.00'},final_capture:true}]}}]};
+ assert.equal(paypalPaid(result,order,'P1'),true);
+ result.purchase_units[0].custom_id='other';assert.equal(paypalPaid(result,order,'P1'),false);
+ delete result.purchase_units[0].custom_id;delete result.purchase_units[0].payments.captures[0].custom_id;assert.equal(paypalPaid(result,order,'P1'),false);
+});
 test('bank config requires account and bounded payment deadline',()=>{
  assert.equal(bankConfig({BANK_TEST_CONFIG:'{}'}),null);assert.equal(bankConfig({BANK_TEST_CONFIG:'bad'}),null);
 });

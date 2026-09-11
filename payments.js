@@ -50,7 +50,8 @@ export async function start(order,env){
 }
 export function paypalPaid(result,order,id){
  const units=result.purchase_units,unit=units?.[0],captures=unit?.payments?.captures,capture=captures?.[0];
- return result.id===id&&result.status==='COMPLETED'&&units?.length===1&&unit.reference_id===order.order_number&&unit.custom_id===order.order_number&&captures?.length===1&&capture.status==='COMPLETED'&&capture.amount?.currency_code==='TWD'&&Number(capture.amount.value)===order.total&&capture.final_capture===true;
+ const customIds=[unit?.custom_id,capture?.custom_id].filter(value=>value!==undefined);
+ return result.id===id&&result.status==='COMPLETED'&&units?.length===1&&unit.reference_id===order.order_number&&customIds.length>0&&customIds.every(value=>value===order.order_number)&&captures?.length===1&&capture.status==='COMPLETED'&&capture.amount?.currency_code==='TWD'&&Number(capture.amount.value)===order.total&&capture.final_capture===true;
 }
 export async function confirm(order,env,data){
  sandbox(env);
